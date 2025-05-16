@@ -415,7 +415,12 @@ type UserInfoRepo interface {
 	UpdateUserRewardStakeReomve(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
 	UpdateUserRewardStake(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
 	UpdateUserRewardNew(ctx context.Context, id, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
+	UpdateOne(ctx context.Context, userId int64, amount float64) error
+	UpdateTwo(ctx context.Context, userId int64, amount float64, address string) error
+	UpdateThree(ctx context.Context, userId int64, amount float64, num int64, address string) error
+	UpdateFour(ctx context.Context, userId int64, amount float64, num int64, address string) error
 	UpdateUserRewardNewFour(ctx context.Context, userId int64, amountUsdt float64) (int64, error)
+	UpdateFive(ctx context.Context, userId int64, amount float64, address string) error
 	UpdateUserRewardRecommendNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, i int64, address string) (int64, error)
 	UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error)
@@ -426,6 +431,7 @@ type UserInfoRepo interface {
 	UpdateTotalOne(ctx context.Context, amountUsdt float64) error
 	ClearUserRaw(ctx context.Context) error
 	UpdateUserMyTotalAmountNew(ctx context.Context, userId int64, amount float64, amountUsdt float64) error
+	UpdateAmountBiw(ctx context.Context, userId int64, amount uint64) error
 	UpdateUserNewTwoNewThree(ctx context.Context, userId int64, amount uint64, last uint64, coinType string) error
 	UpdateUserUsdtFloat(ctx context.Context, userId int64, amount float64, last float64, coinType string) error
 	UpdateUserRecommendLevel(ctx context.Context, userId int64, level uint64) error
@@ -440,10 +446,12 @@ type UserInfoRepo interface {
 	UpdateUserInfo2(ctx context.Context, u *UserInfo) (*UserInfo, error)
 	UpdateUserInfoVip(ctx context.Context, userId, vip int64) (*UserInfo, error)
 	GetUserInfoByUserIds(ctx context.Context, userIds ...int64) (map[int64]*UserInfo, error)
+	GetUserById(ctx context.Context, Id int64) (*User, error)
 	GetUserInfosByVipAndLockVip(ctx context.Context) ([]*UserInfo, error)
 	UpdateUserRewardAreaNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, level, i int64, address string) (int64, error)
 	UpdateUserRewardTotalOneNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, i int64) (int64, error)
 	UpdateUserRewardTotalTwoNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, i int64) (int64, error)
+	GetAllUsersTwo(ctx context.Context) ([]*User, error)
 	UpdateUserRewardTotalOver(ctx context.Context) error
 }
 
@@ -2953,10 +2961,11 @@ func (uuc *UserUseCase) UpdateUserRaw(ctx context.Context, userId int64, amount,
 
 	// 推荐人
 	var (
-		err                 error
-		userRecommend       *UserRecommend
-		tmpRecommendUserIds []string
+		err           error
+		userRecommend *UserRecommend
 	)
+
+	tmpRecommendUserIds := make([]string, 0)
 
 	// 增加业绩
 	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
@@ -3006,6 +3015,460 @@ func (uuc *UserUseCase) UpdateUserRaw(ctx context.Context, userId int64, amount,
 	}
 
 	return err
+}
+
+func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) error {
+	var (
+		one       float64
+		oneOne    float64
+		oneTwo    float64
+		oneThree  float64
+		twoOne    float64
+		two       float64
+		three     float64
+		four      float64
+		five      float64
+		six       float64
+		fiveTwo   uint64
+		fiveOne   float64
+		configs   []*Config
+		err       error
+		areaOne   float64
+		areaTwo   float64
+		areaThree float64
+		areaFour  float64
+		areaFive  float64
+		areaZero  float64
+	)
+
+	configs, _ = uuc.configRepo.GetConfigByKeys(ctx, "one", "two", "three", "four", "five", "six", "one_one", "one_two", "one_three", "two_one", "five_one", "five_two",
+		"three_one", "three_two", "three_three", "three_four", "three_five", "four_one")
+	if nil != configs {
+		for _, vConfig := range configs {
+			if "one" == vConfig.KeyName {
+				one, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "one_one" == vConfig.KeyName {
+				oneOne, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "one_two" == vConfig.KeyName {
+				oneTwo, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "one_three" == vConfig.KeyName {
+				oneThree, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "two_one" == vConfig.KeyName {
+				twoOne, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "two" == vConfig.KeyName {
+				two, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three" == vConfig.KeyName {
+				three, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "four" == vConfig.KeyName {
+				four, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "five" == vConfig.KeyName {
+				five, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "five_one" == vConfig.KeyName {
+				fiveOne, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "five_two" == vConfig.KeyName {
+				fiveTwo, _ = strconv.ParseUint(vConfig.Value, 10, 64)
+			}
+			if "six" == vConfig.KeyName {
+				six, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three_one" == vConfig.KeyName {
+				areaOne, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three_two" == vConfig.KeyName {
+				areaTwo, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three_three" == vConfig.KeyName {
+				areaThree, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three_four" == vConfig.KeyName {
+				areaFour, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "three_five" == vConfig.KeyName {
+				areaFive, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "four_one" == vConfig.KeyName {
+				areaZero, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+
+		}
+	}
+
+	fmt.Println("静态", one, two, three, four, five, six)
+
+	var (
+		users    []*User
+		usersMap map[int64]*User
+	)
+
+	users, err = uuc.repo.GetAllUsers(ctx)
+	if nil == users {
+		fmt.Println("今日分红错误用户获取失败")
+		return err
+	}
+
+	usersMap = make(map[int64]*User, 0)
+	for _, vUsers := range users {
+		usersMap[vUsers.ID] = vUsers
+	}
+
+	// 推荐人
+	var (
+		userRecommends    []*UserRecommend
+		userRecommendsMap map[int64]*UserRecommend
+		myLowUser         map[int64][]*UserRecommend
+	)
+
+	myLowUser = make(map[int64][]*UserRecommend, 0)
+	userRecommendsMap = make(map[int64]*UserRecommend, 0)
+
+	userRecommends, err = uuc.urRepo.GetUserRecommends(ctx)
+	if nil != err {
+		fmt.Println("今日分红错误用户获取失败2")
+		return err
+	}
+
+	for _, vUr := range userRecommends {
+		userRecommendsMap[vUr.UserId] = vUr
+
+		// 我的直推
+		var (
+			myUserRecommendUserId int64
+			tmpRecommendUserIds   []string
+		)
+
+		tmpRecommendUserIds = strings.Split(vUr.RecommendCode, "D")
+		if 2 <= len(tmpRecommendUserIds) {
+			myUserRecommendUserId, _ = strconv.ParseInt(tmpRecommendUserIds[len(tmpRecommendUserIds)-1], 10, 64) // 最后一位是直推人
+		}
+
+		if 0 >= myUserRecommendUserId {
+			continue
+		}
+
+		if _, ok := myLowUser[myUserRecommendUserId]; !ok {
+			myLowUser[myUserRecommendUserId] = make([]*UserRecommend, 0)
+		}
+
+		myLowUser[myUserRecommendUserId] = append(myLowUser[myUserRecommendUserId], vUr)
+	}
+
+	// 静态
+	for _, tmpUsers := range users {
+		// 出局的
+		if 0 >= tmpUsers.AmountUsdtGet {
+			continue
+		}
+
+		num := float64(0)
+		if five <= tmpUsers.AmountUsdtGet {
+			num = five * oneThree
+		} else if three <= tmpUsers.AmountUsdtGet {
+			num = three * oneTwo
+		} else if one <= tmpUsers.AmountUsdtGet {
+			num = one * oneOne
+		} else {
+			continue
+		}
+
+		tmp := num / price
+		tmp = math.Round(tmp*10000000) / 10000000
+
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateOne(ctx, tmpUsers.ID, tmp)
+			if err != nil {
+				fmt.Println("错误分红静态：", err, tmpUsers)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, tmpUsers)
+			continue
+		}
+	}
+
+	// 直推
+	for _, tmpUsers := range users {
+		// 出局的
+		if 0 >= tmpUsers.AmountUsdtGet {
+			continue
+		}
+
+		num := float64(0)
+		if five <= tmpUsers.AmountUsdtGet {
+			num = five * oneThree
+		} else if three <= tmpUsers.AmountUsdtGet {
+			num = three * oneTwo
+		} else if one <= tmpUsers.AmountUsdtGet {
+			num = one * oneOne
+		} else {
+			continue
+		}
+
+		tmp := num / price * twoOne
+		tmp = math.Round(tmp*10000000) / 10000000
+
+		if 0 >= tmp {
+			continue
+		}
+
+		// 推荐人
+		var (
+			userRecommend *UserRecommend
+		)
+		if _, ok := userRecommendsMap[tmpUsers.ID]; ok {
+			userRecommend = userRecommendsMap[tmpUsers.ID]
+		} else {
+			fmt.Println("错误分红帮扶，信息缺失：", err, tmpUsers)
+		}
+
+		if nil == userRecommend || "" == userRecommend.RecommendCode {
+			continue
+		}
+
+		var (
+			tmpRecommendUserIds   []string
+			myUserRecommendUserId int64
+		)
+		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+		if 2 <= len(tmpRecommendUserIds) {
+			myUserRecommendUserId, _ = strconv.ParseInt(tmpRecommendUserIds[len(tmpRecommendUserIds)-1], 10, 64) // 最后一位是直推人
+		}
+
+		if 0 >= myUserRecommendUserId {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateTwo(ctx, myUserRecommendUserId, tmp, tmpUsers.Address)
+			if err != nil {
+				fmt.Println("错误分红静态：", err, tmpUsers)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, tmpUsers)
+			continue
+		}
+	}
+
+	// 团队和平级
+	for _, tmpUsers := range users {
+		// 出局的
+		if 0 >= tmpUsers.AmountUsdtGet {
+			continue
+		}
+
+		num := float64(0)
+		if five <= tmpUsers.AmountUsdtGet {
+			num = five * oneThree
+		} else if three <= tmpUsers.AmountUsdtGet {
+			num = three * oneTwo
+		} else if one <= tmpUsers.AmountUsdtGet {
+			num = one * oneOne
+		} else {
+			continue
+		}
+
+		tmp := num / price
+		tmp = math.Round(tmp*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		// 推荐人
+		var (
+			userRecommend *UserRecommend
+		)
+		if _, ok := userRecommendsMap[tmpUsers.ID]; ok {
+			userRecommend = userRecommendsMap[tmpUsers.ID]
+		} else {
+			fmt.Println("错误分红帮扶，信息缺失：", err, tmpUsers)
+		}
+
+		if nil == userRecommend || "" == userRecommend.RecommendCode {
+			continue
+		}
+
+		var (
+			tmpRecommendUserIds []string
+		)
+		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+
+		lastLevel := 0
+		lastLevelNum := float64(0)
+		lastKey := len(tmpRecommendUserIds) - 1
+		tmpI := uint64(0)
+		for i := lastKey; i >= 0; i-- {
+			currentLevel := 0
+			tmpI++
+
+			tmpUserId, _ := strconv.ParseInt(tmpRecommendUserIds[i], 10, 64) // 最后一位是直推人
+			if 0 >= tmpUserId {
+				continue
+			}
+
+			if _, ok := usersMap[tmpUserId]; !ok {
+				fmt.Println("错误分红小区，信息缺失,user：", err, tmpUsers)
+				continue
+			}
+
+			// 我的下级
+			if _, ok := myLowUser[tmpUserId]; !ok {
+				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, tmpUsers)
+				continue
+			}
+
+			if int(fiveTwo) > len(myLowUser[tmpUserId]) {
+				continue
+			}
+
+			tmpRecommendUser := usersMap[tmpUserId]
+			if nil == tmpRecommendUser {
+				fmt.Println("错误分红小区，信息缺失,user1：", err, tmpUsers)
+				continue
+			}
+
+			if fiveOne > tmpRecommendUser.AmountUsdtGet {
+				continue
+			}
+
+			tmpLastLevelNum := float64(0)
+			if 0 < tmpRecommendUser.VipAdmin {
+				if 1 == tmpRecommendUser.VipAdmin {
+					currentLevel = 1
+					tmpLastLevelNum = areaOne
+				} else if 2 == tmpRecommendUser.VipAdmin {
+					currentLevel = 2
+					tmpLastLevelNum = areaTwo
+				} else if 3 == tmpRecommendUser.VipAdmin {
+					currentLevel = 3
+					tmpLastLevelNum = areaThree
+				} else if 4 == tmpRecommendUser.VipAdmin {
+					currentLevel = 4
+					tmpLastLevelNum = areaFour
+				} else if 5 == tmpRecommendUser.VipAdmin {
+					currentLevel = 5
+					tmpLastLevelNum = areaFive
+				} else {
+					// 跳过，没级别
+					continue
+				}
+			} else {
+				if 1500000 <= tmpRecommendUser.AmountUsdtOrigin {
+					currentLevel = 5
+					tmpLastLevelNum = areaFive
+				} else if 500000 <= tmpRecommendUser.AmountUsdtOrigin {
+					currentLevel = 4
+					tmpLastLevelNum = areaFour
+				} else if 150000 <= tmpRecommendUser.AmountUsdtOrigin {
+					currentLevel = 3
+					tmpLastLevelNum = areaThree
+				} else if 50000 <= tmpRecommendUser.AmountUsdtOrigin {
+					currentLevel = 2
+					tmpLastLevelNum = areaTwo
+				} else {
+					currentLevel = 1
+					tmpLastLevelNum = areaOne
+				}
+
+				tmpLevel := 1
+				tmpLevelNum := areaOne
+				if 2000 <= tmpRecommendUser.Amount {
+					tmpLevel = 4
+					tmpLevelNum = areaFour
+				} else if 1000 <= tmpRecommendUser.Amount {
+					tmpLevel = 3
+					tmpLevelNum = areaThree
+				} else if 500 <= tmpRecommendUser.Amount {
+					tmpLevel = 2
+					tmpLevelNum = areaTwo
+				}
+
+				if tmpLevel > currentLevel {
+					currentLevel = tmpLevel
+					tmpLastLevelNum = tmpLevelNum
+				}
+			}
+
+			var (
+				tmpAreaAmount float64
+			)
+			// 级别低跳过
+			if currentLevel < lastLevel {
+				continue
+			} else if currentLevel == lastLevel {
+				tmpAreaAmount = tmp * areaZero
+			} else {
+				// 级差
+				if tmpLastLevelNum < lastLevelNum {
+					fmt.Println("错误分红小区，配置，信息缺错误：", err, tmpUserId, tmpUsers, tmpLastLevelNum, lastLevelNum)
+					continue
+				}
+
+				tmpAreaAmount = tmp * (tmpLastLevelNum - lastLevelNum)
+			}
+
+			//fmt.Println(tmpAreaAmount)
+			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
+
+			if currentLevel == lastLevel {
+				if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+					err = uuc.uiRepo.UpdateFour(ctx, tmpUserId, tmpAreaAmount, int64(i), tmpUsers.Address)
+					if err != nil {
+						fmt.Println("错误分红平级：", err, tmpUsers)
+					}
+
+					return nil
+				}); nil != err {
+					fmt.Println("err reward daily", err, tmpUsers)
+					continue
+				}
+			} else {
+				// 分红
+				tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+				if 0 >= tmpAreaAmount {
+					continue
+				}
+
+				if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+					err = uuc.uiRepo.UpdateThree(ctx, tmpUserId, tmpAreaAmount, int64(i), tmpUsers.Address)
+					if err != nil {
+						fmt.Println("错误分红社区：", err, tmpUsers)
+					}
+
+					return nil
+				}); nil != err {
+					fmt.Println("err reward daily", err, tmpUsers)
+					continue
+				}
+			}
+
+			if currentLevel > lastLevel {
+				lastLevel = currentLevel
+				lastLevelNum = tmpLastLevelNum
+			}
+		}
+	}
+
+	return nil
 }
 
 func (uuc *UserUseCase) AdminDailyLocationRewardNewTwo(ctx context.Context, req *v1.AdminDailyLocationRewardRequest) (*v1.AdminDailyLocationRewardReply, error) {

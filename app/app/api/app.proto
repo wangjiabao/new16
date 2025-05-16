@@ -487,6 +487,7 @@ message EthAuthorizeReply {
 
 
 message DepositRequest {
+	uint64 send = 1;
 }
 
 message DepositReply {

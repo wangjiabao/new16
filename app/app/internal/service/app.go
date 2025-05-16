@@ -52,38 +52,6 @@ func (a *AppService) EthAuthorize(ctx context.Context, req *v1.EthAuthorizeReque
 func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.DepositReply, error) {
 	end := time.Now().UTC().Add(50 * time.Second)
 
-	// 配置
-	//configs, err = a.uuc.GetDhbConfig(ctx)
-	//if nil != configs {
-	//	for _, vConfig := range configs {
-	//		if "level1Dhb" == vConfig.KeyName {
-	//			level1Dhb = vConfig.Value + "00000000000"
-	//		} else if "level2Dhb" == vConfig.KeyName {
-	//			level2Dhb = vConfig.Value + "00000000000"
-	//		} else if "level3Dhb" == vConfig.KeyName {
-	//			level3Dhb = vConfig.Value + "00000000000"
-	//		}
-	//	}
-	//}
-
-	var (
-		configs []*biz.Config
-		bPrice  float64
-	)
-	configs, _ = a.uuc.GetbPriceConfig(ctx)
-	if nil != configs {
-		for _, vConfig := range configs {
-			if "b_price" == vConfig.KeyName {
-				bPrice, _ = strconv.ParseFloat(vConfig.Value, 10)
-			}
-		}
-	}
-
-	if 0 == bPrice {
-		fmt.Println("入金错误：价格为0")
-		return nil, nil
-	}
-
 	for i := 1; i <= 10; i++ {
 		var (
 			depositUsdtResult []*userDeposit
@@ -107,7 +75,7 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 
 		// 0x0299e92df88c034F6425e78b6f6A367e84160B45 test
 		// 0x5d4bAA2A7a73dEF7685d036AAE993662B0Ef2f8F rel
-		userLength, err = getUserLength("0x66e93E9108370fEf2a04d9036C21151439FE19CF")
+		userLength, err = getUserLength("0xE059eb7464F8cFeA2C17964c095100E5CbD71835")
 		if nil != err {
 			fmt.Println(err)
 		}
@@ -126,7 +94,7 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 
 		// 0x0299e92df88c034F6425e78b6f6A367e84160B454 test
 		// 0x5d4bAA2A7a73dEF7685d036AAE993662B0Ef2f8F rel
-		depositUsdtResult, err = getUserInfo(last, userLength-1, "0x66e93E9108370fEf2a04d9036C21151439FE19CF")
+		depositUsdtResult, err = getUserInfo(last, userLength-1, "0xE059eb7464F8cFeA2C17964c095100E5CbD71835")
 		if nil != err {
 			break
 		}
@@ -157,14 +125,18 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 					tmpValue int64
 				)
 
-				if 100 <= vUser.Amount {
+				if 500 == vUser.Amount {
+					tmpValue = vUser.Amount
+				} else if 1000 == vUser.Amount {
+					tmpValue = vUser.Amount
+				} else if 2000 == vUser.Amount {
 					tmpValue = vUser.Amount
 				} else {
 					return &v1.DepositReply{}, nil
 				}
 
 				// 充值
-				err = a.ruc.DepositNew(ctx, depositUsers[vUser.Address].ID, uint64(tmpValue), &biz.EthUserRecord{ // 两种币的记录
+				err = a.ruc.DepositNew(ctx, depositUsers[vUser.Address].ID, vUser.Address, uint64(tmpValue), &biz.EthUserRecord{ // 两种币的记录
 					UserId:    depositUsers[vUser.Address].ID,
 					Status:    "success",
 					Type:      "deposit",
@@ -317,6 +289,15 @@ func (a *AppService) DepositBiw(ctx context.Context, req *v1.DepositRequest) (*v
 		if err != nil {
 			fmt.Println(err, "更新业绩失败", vUser)
 			continue
+		}
+	}
+
+	// 发奖励
+	now := time.Now().UTC()
+	if 1 == req.Send || (16 == now.Hour() && 10 > now.Minute()) {
+		err = a.uuc.AdminDailyBReward(ctx, price)
+		if err != nil {
+			fmt.Println(err, "分红失败")
 		}
 	}
 
@@ -2290,9 +2271,9 @@ func (a *AppService) AdminWithdrawEth(ctx context.Context, req *v1.AdminWithdraw
 		}
 
 		if "RAW" == withdraw.Type {
-			tokenAddress = ""
+			tokenAddress = "0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437"
 		} else if "USDT" == withdraw.Type {
-			tokenAddress = "0x55d398326f99059fF775485246999027B3197955"
+			tokenAddress = "0x717441C98af570B4806Ee07e6B319395a4c6bFBA"
 		} else {
 			_, err = a.uuc.UpdateWithdrawSuccess(ctx, withdraw.ID)
 			continue
