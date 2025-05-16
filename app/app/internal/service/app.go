@@ -2719,6 +2719,89 @@ func (a *AppService) getUserBalanceB(ctx context.Context) (map[string]string, er
 	return res, nil
 }
 
+func (a *AppService) getUserBalanceBTwo(ctx context.Context) (map[string]string, error) {
+	var (
+		users []*biz.User
+		err   error
+	)
+	res := make(map[string]string, 0)
+	users, err = a.uuc.GetAllUsers(ctx)
+	if nil != err {
+		return res, err
+	}
+
+	for _, v := range users {
+		var (
+			client   *ethclient.Client
+			instance *Earth
+			bal      *big.Int
+			url1     = "https://bsc-dataseed4.binance.org/"
+		)
+
+		for j := 0; j < 15; j++ {
+			//client, err := ethclient.Dial("https://data-seed-prebsc-1-s3.binance.org:8545/")
+			client, err = ethclient.Dial(url1)
+			if err != nil {
+				fmt.Println(err, "client")
+				continue
+			}
+
+			tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+			instance, err = NewEarth(tokenAddress, client)
+			if err != nil {
+				continue
+			}
+
+			addressStr := common.HexToAddress(v.Address)
+			bal, err = instance.BalanceOf(&bind.CallOpts{}, addressStr)
+			if err != nil {
+				if 0 == j {
+					url1 = "https://binance.llamarpc.com/"
+				} else if 1 == j {
+					url1 = "https://bscrpc.com/"
+				} else if 2 == j {
+					url1 = "https://bsc-pokt.nodies.app/"
+				} else if 3 == j {
+					url1 = "https://data-seed-prebsc-1-s3.binance.org:8545/"
+				} else if 4 == j {
+					url1 = "https://bsc-dataseed.binance.org/"
+				} else if 5 == j {
+					url1 = "https://bsc-pokt.nodies.app/"
+				} else if 6 == j {
+					url1 = "https://bsc-dataseed.bnbchain.org/"
+				} else if 7 == j {
+					url1 = "https://bsc-dataseed3.bnbchain.org/"
+				} else if 8 == j {
+					url1 = "https://bsc.drpc.org/"
+				} else if 9 == j {
+					url1 = "https://bsc-dataseed3.bnbchain.org/"
+				} else if 10 == j {
+					url1 = "https://bsc-dataseed4.ninicoin.io/"
+				} else if 11 == j {
+					url1 = "https://bsc.meowrpc.com/"
+				} else if 12 == j {
+					url1 = "https://bsc-rpc.publicnode.com/"
+				} else if 13 == j {
+					url1 = "https://bsc.meowrpc.com/"
+				} else if 14 == j {
+					url1 = "https://bsc-dataseed3.defibit.io/"
+				}
+
+				continue
+			}
+
+			//fmt.Println(url, "ok")
+			break
+		}
+
+		res[v.Address] = bal.String()
+		fmt.Println(v.Address, bal)
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	return res, nil
+}
+
 func getUserInfo(start int64, end int64, address string) ([]*userDeposit, error) {
 	url1 := "https://bsc-dataseed4.binance.org/"
 
@@ -2811,6 +2894,79 @@ func getUserInfo(start int64, end int64, address string) ([]*userDeposit, error)
 	return users, nil
 }
 
+func getTodayReward() (string, error) {
+	var (
+		err      error
+		client   *ethclient.Client
+		instance *Earth
+		bal      *big.Int
+		url1     = "https://bsc-dataseed4.binance.org/"
+	)
+
+	for j := 0; j < 15; j++ {
+		//client, err := ethclient.Dial("https://data-seed-prebsc-1-s3.binance.org:8545/")
+		client, err = ethclient.Dial(url1)
+		if err != nil {
+			fmt.Println(err, "client")
+			continue
+		}
+
+		tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+		instance, err = NewEarth(tokenAddress, client)
+		if err != nil {
+			continue
+		}
+
+		now := time.Now()
+		lastHour := now.Add(-1 * time.Hour)
+		startOfLastHour := time.Date(lastHour.Year(), lastHour.Month(), lastHour.Day(), lastHour.Hour(), 0, 0, 0, lastHour.Location())
+		// 转换为 *big.Int
+		bigTimestamp := big.NewInt(startOfLastHour.Unix())
+
+		bal, err = instance.DailyFee(&bind.CallOpts{}, bigTimestamp)
+		if err != nil {
+			if 0 == j {
+				url1 = "https://binance.llamarpc.com/"
+			} else if 1 == j {
+				url1 = "https://bscrpc.com/"
+			} else if 2 == j {
+				url1 = "https://bsc-pokt.nodies.app/"
+			} else if 3 == j {
+				url1 = "https://data-seed-prebsc-1-s3.binance.org:8545/"
+			} else if 4 == j {
+				url1 = "https://bsc-dataseed.binance.org/"
+			} else if 5 == j {
+				url1 = "https://bsc-pokt.nodies.app/"
+			} else if 6 == j {
+				url1 = "https://bsc-dataseed.bnbchain.org/"
+			} else if 7 == j {
+				url1 = "https://bsc-dataseed3.bnbchain.org/"
+			} else if 8 == j {
+				url1 = "https://bsc.drpc.org/"
+			} else if 9 == j {
+				url1 = "https://bsc-dataseed3.bnbchain.org/"
+			} else if 10 == j {
+				url1 = "https://bsc-dataseed4.ninicoin.io/"
+			} else if 11 == j {
+				url1 = "https://bsc.meowrpc.com/"
+			} else if 12 == j {
+				url1 = "https://bsc-rpc.publicnode.com/"
+			} else if 13 == j {
+				url1 = "https://bsc.meowrpc.com/"
+			} else if 14 == j {
+				url1 = "https://bsc-dataseed3.defibit.io/"
+			}
+
+			continue
+		}
+
+		//fmt.Println(url, "ok")
+		break
+	}
+
+	return bal.String(), nil
+}
+
 func getPrice() (float64, error) {
 	urls := []string{
 		"https://bsc-dataseed4.binance.org/",
@@ -2880,5 +3036,5 @@ func getPrice() (float64, error) {
 		return price, nil
 	}
 
-	return 0, fmt.Errorf("failed to get price from all RPCs")
+	return -1, nil
 }
