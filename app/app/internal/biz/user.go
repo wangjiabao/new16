@@ -411,6 +411,7 @@ type UserCurrentMonthRecommendRepo interface {
 
 type UserInfoRepo interface {
 	UpdateUserNewTwoNewTwo(ctx context.Context, userId int64, amount uint64) error
+	UpdateUserNewTwoNewThreeT(ctx context.Context, userId int64, amountB, amount float64) error
 	UpdateUserRewardStakeReomve(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
 	UpdateUserRewardStake(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
 	UpdateUserRewardNew(ctx context.Context, id, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
@@ -423,6 +424,8 @@ type UserInfoRepo interface {
 	UpdateUserRewardRecommendUserGet(ctx context.Context, userId int64, amountUsdt float64, enough bool, amount float64) error
 	UpdateUserMyTotalAmount(ctx context.Context, userId int64, amountUsdt float64) error
 	UpdateTotalOne(ctx context.Context, amountUsdt float64) error
+	ClearUserRaw(ctx context.Context) error
+	UpdateUserMyTotalAmountNew(ctx context.Context, userId int64, amount float64, amountUsdt float64) error
 	UpdateUserNewTwoNewThree(ctx context.Context, userId int64, amount uint64, last uint64, coinType string) error
 	UpdateUserUsdtFloat(ctx context.Context, userId int64, amount float64, last float64, coinType string) error
 	UpdateUserRecommendLevel(ctx context.Context, userId int64, level uint64) error
@@ -2944,6 +2947,65 @@ func (uuc *UserUseCase) AdminDailyBalanceReward(ctx context.Context, req *v1.Adm
 	}
 
 	return &v1.AdminDailyBalanceRewardReply{}, nil
+}
+
+func (uuc *UserUseCase) UpdateUserRaw(ctx context.Context, userId int64, amount, amountB float64, usersMap map[int64]*User) error {
+
+	// 推荐人
+	var (
+		err                 error
+		userRecommend       *UserRecommend
+		tmpRecommendUserIds []string
+	)
+
+	// 增加业绩
+	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+		err = uuc.uiRepo.UpdateUserNewTwoNewThreeT(ctx, userId, amountB, amount)
+		if nil != err {
+			return err
+		}
+
+		return nil
+	}); nil != err {
+		fmt.Println("跟新余额持币：", err, userId)
+		return err
+	}
+
+	userRecommend, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
+	if nil != err {
+		return err
+	}
+	if "" != userRecommend.RecommendCode {
+		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+	}
+
+	totalTmp := len(tmpRecommendUserIds) - 1
+	for i := totalTmp; i >= 0; i-- {
+		tmpUserId, _ := strconv.ParseInt(tmpRecommendUserIds[i], 10, 64) // 最后一位是直推人
+		if 0 >= tmpUserId {
+			continue
+		}
+
+		if _, ok := usersMap[tmpUserId]; !ok {
+			fmt.Println("buy遍历，信息缺失,user：", userId, err, tmpUserId)
+			continue
+		}
+
+		// 增加业绩
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateUserMyTotalAmountNew(ctx, tmpUserId, amountB, amount)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("遍历业绩：", err, userId, tmpUserId)
+			continue
+		}
+	}
+
+	return err
 }
 
 func (uuc *UserUseCase) AdminDailyLocationRewardNewTwo(ctx context.Context, req *v1.AdminDailyLocationRewardRequest) (*v1.AdminDailyLocationRewardReply, error) {

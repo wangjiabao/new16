@@ -193,6 +193,23 @@ func (ruc *RecordUseCase) GetGlobalLock(ctx context.Context) (*GlobalLock, error
 	return ruc.locationRepo.GetLockGlobalLocation(ctx)
 }
 
+func (ruc *RecordUseCase) ClearUserRaw(ctx context.Context) error {
+	var err error
+	if err = ruc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+		err = ruc.userInfoRepo.ClearUserRaw(ctx)
+		if nil != err {
+			return err
+		}
+
+		return nil
+	}); nil != err {
+		fmt.Println(err, "错误投资31")
+		return err
+	}
+
+	return nil
+}
+
 func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount uint64, eth *EthUserRecord) error {
 	// 更新user last,
 

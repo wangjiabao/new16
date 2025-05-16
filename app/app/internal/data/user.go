@@ -2737,6 +2737,17 @@ func (ub *UserBalanceRepo) RecommendRewardBiw(ctx context.Context, userId int64,
 	return userBalanceRecode.ID, nil
 }
 
+// UpdateUserNewTwoNewThreeT .
+func (ui *UserInfoRepo) UpdateUserNewTwoNewThreeT(ctx context.Context, userId int64, amountB, amount float64) error {
+	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
+		Updates(map[string]interface{}{"amount_usdt": amountB, "amount_usdt_get": amount})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
+	return nil
+}
+
 // UpdateUserNewTwoNewTwo .
 func (ui *UserInfoRepo) UpdateUserNewTwoNewTwo(ctx context.Context, userId int64, amount uint64) error {
 	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
@@ -2757,6 +2768,31 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewTwo(ctx context.Context, userId int64
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
 	if err != nil {
 		return errors.New(500, "CREATE_LOCATION_ERROR", "占位信息创建失败")
+	}
+
+	return nil
+}
+
+// ClearUserRaw .
+func (ui *UserInfoRepo) ClearUserRaw(ctx context.Context) error {
+	res := ui.data.DB(ctx).Table("user").Where("id>?", 0).
+		Updates(map[string]interface{}{"amount_usdt": 0, "amount_usdt_origin": 0, "my_total_amount": 0})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
+	return nil
+}
+
+// UpdateUserMyTotalAmountNew .
+func (ui *UserInfoRepo) UpdateUserMyTotalAmountNew(ctx context.Context, userId int64, amount float64, amountUsdt float64) error {
+	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
+		Updates(map[string]interface{}{
+			"amount_usdt_origin": gorm.Expr("amount_usdt_origin + ?", amountUsdt),
+			"my_total_amount":    gorm.Expr("my_total_amount + ?", amount),
+		})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 	}
 
 	return nil
