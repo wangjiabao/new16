@@ -2636,6 +2636,89 @@ type userDeposit struct {
 	Amount  int64
 }
 
+func (a *AppService) getUserBalanceB(ctx context.Context) (map[string]string, error) {
+	var (
+		users []*biz.User
+		err   error
+	)
+	res := make(map[string]string, 0)
+	users, err = a.uuc.GetAllUsers(ctx)
+	if nil != err {
+		return res, err
+	}
+
+	for _, v := range users {
+		var (
+			client   *ethclient.Client
+			instance *Dfil
+			bal      *big.Int
+			url1     = "https://bsc-dataseed4.binance.org/"
+		)
+
+		for j := 0; j < 15; j++ {
+			//client, err := ethclient.Dial("https://data-seed-prebsc-1-s3.binance.org:8545/")
+			client, err = ethclient.Dial(url1)
+			if err != nil {
+				fmt.Println(err, "client")
+				continue
+			}
+
+			tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+			instance, err = NewDfil(tokenAddress, client)
+			if err != nil {
+				continue
+			}
+
+			addressStr := common.HexToAddress(v.Address)
+			bal, err = instance.BalanceOf(&bind.CallOpts{}, addressStr)
+			if err != nil {
+				if 0 == j {
+					url1 = "https://binance.llamarpc.com/"
+				} else if 1 == j {
+					url1 = "https://bscrpc.com/"
+				} else if 2 == j {
+					url1 = "https://bsc-pokt.nodies.app/"
+				} else if 3 == j {
+					url1 = "https://data-seed-prebsc-1-s3.binance.org:8545/"
+				} else if 4 == j {
+					url1 = "https://bsc-dataseed.binance.org/"
+				} else if 5 == j {
+					url1 = "https://bsc-pokt.nodies.app/"
+				} else if 6 == j {
+					url1 = "https://bsc-dataseed.bnbchain.org/"
+				} else if 7 == j {
+					url1 = "https://bsc-dataseed3.bnbchain.org/"
+				} else if 8 == j {
+					url1 = "https://bsc.drpc.org/"
+				} else if 9 == j {
+					url1 = "https://bsc-dataseed3.bnbchain.org/"
+				} else if 10 == j {
+					url1 = "https://bsc-dataseed4.ninicoin.io/"
+				} else if 11 == j {
+					url1 = "https://bsc.meowrpc.com/"
+				} else if 12 == j {
+					url1 = "https://bsc-rpc.publicnode.com/"
+				} else if 13 == j {
+					url1 = "https://bsc.meowrpc.com/"
+				} else if 14 == j {
+					url1 = "https://bsc-dataseed3.defibit.io/"
+				}
+
+				continue
+			}
+
+			//fmt.Println(url, "ok")
+			break
+		}
+
+		res[v.Address] = bal.String()
+		fmt.Println(v.Address, bal)
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	return res, nil
+}
+
 func getUserInfo(start int64, end int64, address string) ([]*userDeposit, error) {
 	url1 := "https://bsc-dataseed4.binance.org/"
 
@@ -2726,4 +2809,76 @@ func getUserInfo(start int64, end int64, address string) ([]*userDeposit, error)
 	}
 
 	return users, nil
+}
+
+func getPrice() (float64, error) {
+	urls := []string{
+		"https://bsc-dataseed4.binance.org/",
+		"https://binance.llamarpc.com/",
+		"https://bscrpc.com/",
+		"https://bsc-pokt.nodies.app/",
+		"https://data-seed-prebsc-1-s3.binance.org:8545/",
+	}
+
+	var (
+		usdtAddress = common.HexToAddress("0x717441C98af570B4806Ee07e6B319395a4c6bFBA") // BSC上的USDT地址
+	)
+
+	for _, urlTmp := range urls {
+		client, err := ethclient.Dial(urlTmp)
+		if err != nil {
+			fmt.Println("client error:", err)
+			continue
+		}
+
+		tokenAddress := common.HexToAddress("0x17FF36c2c125fcFF2e3339793763d775D51b87ff") // LP Pair 地址
+		instance, err := NewPair(tokenAddress, client)
+		if err != nil {
+			fmt.Println("NewPair error:", err)
+			continue
+		}
+
+		// 获取 token0 和 token1
+		token0, err := instance.Token0(&bind.CallOpts{})
+		if err != nil {
+			fmt.Println("token0 error:", err)
+			continue
+		}
+
+		token1, err := instance.Token1(&bind.CallOpts{})
+		if err != nil {
+			fmt.Println("token1 error:", err)
+			continue
+		}
+
+		// 获取储备量
+		reserves, err := instance.GetReserves(&bind.CallOpts{})
+		if err != nil {
+			fmt.Println("GetReserves error:", err)
+			continue
+		}
+
+		// 判断哪一个是USDT
+		var price float64
+		if token0 == usdtAddress {
+			// price = reserve0 / reserve1
+			price, _ = new(big.Float).Quo(
+				new(big.Float).SetInt(reserves.Reserve0),
+				new(big.Float).SetInt(reserves.Reserve1),
+			).Float64()
+		} else if token1 == usdtAddress {
+			// price = reserve1 / reserve0
+			price, _ = new(big.Float).Quo(
+				new(big.Float).SetInt(reserves.Reserve1),
+				new(big.Float).SetInt(reserves.Reserve0),
+			).Float64()
+		} else {
+			fmt.Println("USDT not in pair")
+			continue
+		}
+
+		return price, nil
+	}
+
+	return 0, fmt.Errorf("failed to get price from all RPCs")
 }
