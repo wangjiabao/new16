@@ -602,6 +602,38 @@ func (a *AppService) DepositBak(ctx context.Context, req *v1.DepositRequest) (*v
 	return &v1.DepositReply{}, nil
 }
 
+// DailyReward dailyReward .
+func (a *AppService) DailyReward(ctx context.Context, req *v1.DailyRewardRequest) (*v1.DailyRewardReply, error) {
+	var (
+		rewardAmountStr string
+		rewardAmount    float64
+		err             error
+	)
+	rewardAmountStr, err = getTodayReward()
+	if nil != err {
+		fmt.Println("获取昨日失败", err)
+		return nil, err
+	}
+
+	// 将字符串转换为 big.Float
+	raw := new(big.Float)
+	raw.SetPrec(236) // 精度设高一点以避免精度丢失
+	raw.SetString(rewardAmountStr)
+
+	// 除以 10^18 得到实际余额
+	divisor := new(big.Float).SetFloat64(1e18)
+	realBalance := new(big.Float).Quo(raw, divisor)
+	// 转为 float64
+	rewardAmount, _ = realBalance.Float64()
+
+	if 0 >= rewardAmount {
+		fmt.Println("今日0", rewardAmount, rewardAmountStr)
+		return nil, err
+	}
+
+	return &v1.DailyRewardReply{}, a.uuc.AdminDailyCReward(ctx, rewardAmount)
+}
+
 // DepositWithdraw  .
 func (a *AppService) DepositWithdraw(ctx context.Context, req *v1.DepositRequest) (*v1.DepositReply, error) {
 	//var (
@@ -2806,6 +2838,10 @@ func getTodayReward() (string, error) {
 
 		//fmt.Println(url, "ok")
 		break
+	}
+
+	if nil == bal {
+		return "-1", nil
 	}
 
 	return bal.String(), nil

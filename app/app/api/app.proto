@@ -67,6 +67,12 @@ service App {
 		};
 	};
 
+	rpc DailyReward (DailyRewardRequest) returns (DailyRewardReply) {
+		option (google.api.http) = {
+			get: "/api/admin_dhb/daily_reward"
+		};
+	};
+
 	rpc DepositWithdraw (DepositRequest) returns (DepositReply) {
 		option (google.api.http) = {
 			get: "/api/admin_dhb/deposit_withdraw"
@@ -491,6 +497,12 @@ message DepositRequest {
 }
 
 message DepositReply {
+}
+
+message DailyRewardRequest {
+}
+
+message DailyRewardReply {
 }
 
 message VipCheckRequest {

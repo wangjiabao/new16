@@ -421,6 +421,7 @@ type UserInfoRepo interface {
 	UpdateFour(ctx context.Context, userId int64, amount float64, num int64, address string) error
 	UpdateUserRewardNewFour(ctx context.Context, userId int64, amountUsdt float64) (int64, error)
 	UpdateFive(ctx context.Context, userId int64, amount float64, address string) error
+	UpdateSix(ctx context.Context, userId int64, amount float64) error
 	UpdateUserRewardRecommendNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, i int64, address string) (int64, error)
 	UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error)
@@ -3017,6 +3018,103 @@ func (uuc *UserUseCase) UpdateUserRaw(ctx context.Context, userId int64, amount,
 	return err
 }
 
+func (uuc *UserUseCase) AdminDailyCReward(ctx context.Context, rewardAmount float64) error {
+	var (
+		users []*User
+		err   error
+	)
+
+	users, err = uuc.repo.GetAllUsers(ctx)
+	if nil == users {
+		fmt.Println("今日分红错误用户获取失败")
+		return err
+	}
+
+	one := make([]*User, 0)
+	two := make([]*User, 0)
+	three := make([]*User, 0)
+
+	for _, v := range users {
+		if 2000 <= v.Amount {
+			one = append(one, v)
+			two = append(two, v)
+			three = append(three, v)
+		} else if 1000 <= v.Amount {
+			one = append(one, v)
+			two = append(two, v)
+		} else if 500 <= v.Amount {
+			one = append(one, v)
+		}
+	}
+
+	total := len(one) + len(two) + len(three)
+	if 0 >= total {
+		fmt.Println("无人")
+		return nil
+	}
+
+	preReward := rewardAmount / float64(total)
+
+	for _, v := range one {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	for _, v := range two {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	for _, v := range three {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	return nil
+}
+
 func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) error {
 	var (
 		one       float64
@@ -3312,6 +3410,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 		lastLevelNum := float64(0)
 		lastKey := len(tmpRecommendUserIds) - 1
 		tmpI := uint64(0)
+		tmpCurrentSameMax := float64(100)
 		for i := lastKey; i >= 0; i-- {
 			currentLevel := 0
 			tmpI++
@@ -3411,7 +3510,13 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 			if currentLevel < lastLevel {
 				continue
 			} else if currentLevel == lastLevel {
+				if tmpCurrentSameMax-areaZero <= -1 {
+					fmt.Println("平级奖励发光了", tmpCurrentSameMax, areaZero, tmpUserId)
+					continue
+				}
+
 				tmpAreaAmount = tmp * areaZero
+				tmpCurrentSameMax -= areaZero
 			} else {
 				// 级差
 				if tmpLastLevelNum < lastLevelNum {
