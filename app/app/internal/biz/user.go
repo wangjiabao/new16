@@ -805,6 +805,48 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			currentLevel = vUsers.VipAdmin
 		}
 
+		if 0 < vUsers.VipAdmin {
+			if 1 == vUsers.VipAdmin {
+				currentLevel = 1
+			} else if 2 == vUsers.VipAdmin {
+				currentLevel = 2
+			} else if 3 == vUsers.VipAdmin {
+				currentLevel = 3
+			} else if 4 == vUsers.VipAdmin {
+				currentLevel = 4
+			} else if 5 == vUsers.VipAdmin {
+				currentLevel = 5
+			} else {
+				// 跳过，没级别
+				continue
+			}
+		} else {
+			if 1500000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 5
+			} else if 500000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 4
+			} else if 150000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 3
+			} else if 50000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 2
+			} else {
+				currentLevel = 1
+			}
+
+			tmpLevel := int64(1)
+			if 2000 <= vUsers.Amount {
+				tmpLevel = 4
+			} else if 1000 <= vUsers.Amount {
+				tmpLevel = 3
+			} else if 500 <= vUsers.Amount {
+				tmpLevel = 2
+			}
+
+			if tmpLevel > currentLevel {
+				currentLevel = tmpLevel
+			}
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
