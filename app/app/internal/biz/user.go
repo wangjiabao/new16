@@ -800,27 +800,6 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			continue
 		}
 
-		tmpMyRecommendUserIdsLen := int64(0)
-		tmpMax := float64(0)
-		tmpAreaMin := float64(0)
-
-		if _, ok := myLowUser[vUsers.ID]; ok {
-			tmpMyRecommendUserIdsLen = int64(len(myLowUser[vUsers.ID]))
-
-			for _, vV := range myLowUser[vUsers.ID] {
-				if _, ok2 := usersMap[vV.UserId]; ok2 {
-					if tmpMax < usersMap[vV.UserId].MyTotalAmount+usersMap[vV.UserId].AmountUsdt {
-						tmpMax = usersMap[vV.UserId].MyTotalAmount + usersMap[vV.UserId].AmountUsdt
-					}
-				}
-			}
-
-			if 0 < tmpMax {
-				if vUsers.MyTotalAmount > tmpMax {
-					tmpAreaMin = vUsers.MyTotalAmount - tmpMax
-				}
-			}
-		}
 		currentLevel := vUsers.Vip
 		if 0 < vUsers.VipAdmin {
 			currentLevel = vUsers.VipAdmin
@@ -860,20 +839,11 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			BalanceUsdt:        fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceUsdtFloat),
 			BalanceDhb:         fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceRawFloat),
 			Vip:                currentLevel,
-			Out:                vUsers.OutRate,
-			HistoryRecommend:   tmpMyRecommendUserIdsLen,
-			AreaTotal:          vUsers.MyTotalAmount,
-			AreaMax:            tmpMax,
-			AreaMin:            tmpAreaMin,
-			AmountUsdtGet:      fmt.Sprintf("%.2f", vUsers.AmountUsdtGet),
-			AmountUsdtCurrent:  fmt.Sprintf("%.2f", vUsers.AmountUsdt),
-			BalanceKsdt:        fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceKsdtFloat),
-			RecommendLevel:     vUsers.RecommendLevel,
+			AreaTotal:          vUsers.AmountUsdtOrigin,
 			Lock:               vUsers.Lock,
 			LockReward:         vUsers.LockReward,
 			AmountFour:         fmt.Sprintf("%.2f", vUsers.AmountFour),
 			AmountFourGet:      fmt.Sprintf("%.2f", vUsers.AmountFourGet),
-			Password:           vUsers.Password,
 			Four:               int64(vUsers.Amount),
 			MyRecommendAddress: addressMyRecommend,
 		})
