@@ -2867,7 +2867,7 @@ func getPrice() (float64, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0x17FF36c2c125fcFF2e3339793763d775D51b87ff") // LP Pair 地址
+		tokenAddress := common.HexToAddress("0xCcE7B6aF9F0Db5d0CC799206f6a690f64aC0cB2C") // LP Pair 地址
 		instance, err := NewPair(tokenAddress, client)
 		if err != nil {
 			fmt.Println("NewPair error:", err)
