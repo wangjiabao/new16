@@ -188,7 +188,7 @@ func (a *AppService) DepositBiw(ctx context.Context, req *v1.DepositRequest) (*v
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2303,7 +2303,7 @@ func (a *AppService) AdminWithdrawEth(ctx context.Context, req *v1.AdminWithdraw
 		}
 
 		if "RAW" == withdraw.Type {
-			tokenAddress = "0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437"
+			tokenAddress = "0x792784d2afe081F9eA1c459D19D7f14CE39D860C"
 		} else if "USDT" == withdraw.Type {
 			tokenAddress = "0x717441C98af570B4806Ee07e6B319395a4c6bFBA"
 		} else {
@@ -2539,7 +2539,7 @@ func (a *AppService) getUserBalanceB(ctx context.Context) (map[string]string, er
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
 			instance, err = NewDfil(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2622,7 +2622,7 @@ func (a *AppService) getUserBalanceBTwo(ctx context.Context) (map[string]string,
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2787,14 +2787,14 @@ func getTodayReward() (string, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0xc637BfEECee775Ac7152FEFB8ad514952B2Bf437")
+		tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
 		instance, err = NewEarth(tokenAddress, client)
 		if err != nil {
 			continue
 		}
 
-		now := time.Now()
-		lastHour := now.Add(-1 * time.Hour)
+		now := time.Now().UTC()
+		lastHour := now.Add(-24 * time.Hour)
 		startOfLastHour := time.Date(lastHour.Year(), lastHour.Month(), lastHour.Day(), lastHour.Hour(), 0, 0, 0, lastHour.Location())
 		// 转换为 *big.Int
 		bigTimestamp := big.NewInt(startOfLastHour.Unix())
