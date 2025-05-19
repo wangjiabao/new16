@@ -3284,6 +3284,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
 			num = tmpUsers.AmountUsdt * oneTwo
+			fmt.Println(tmpUsers.AmountUsdt, oneTwo, num)
 		} else if one <= tmpUsers.AmountUsdtGet {
 			num = tmpUsers.AmountUsdt * oneOne
 		} else {
