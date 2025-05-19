@@ -217,6 +217,7 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, address 
 		one     float64
 		two     float64
 		three   float64
+		userMy  *User
 		err     error
 	)
 
@@ -233,6 +234,15 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, address 
 				three, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 		}
+	}
+
+	userMy, err = ruc.userInfoRepo.GetUserById(ctx, userId)
+	if nil != err {
+		return err
+	}
+
+	if 2000 < userMy.Amount+amount {
+		return nil
 	}
 
 	var (
@@ -261,11 +271,11 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, address 
 	tmp := float64(0)
 	if nil != userR {
 		if 2000 <= userR.Amount {
-			tmp = float64(userR.Amount) * three
+			tmp = 2000 * three
 		} else if 1000 <= userR.Amount {
-			tmp = float64(userR.Amount) * two
+			tmp = 1000 * two
 		} else if 500 <= userR.Amount {
-			tmp = float64(userR.Amount) * one
+			tmp = 500 * one
 		}
 	}
 
