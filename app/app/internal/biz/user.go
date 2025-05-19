@@ -718,6 +718,25 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 		err          error
 	)
 
+	var (
+		fiveTwo uint64
+		fiveOne float64
+		configs []*Config
+	)
+
+	configs, _ = uuc.configRepo.GetConfigByKeys(ctx, "five_one", "five_two")
+	if nil != configs {
+		for _, vConfig := range configs {
+
+			if "five_one" == vConfig.KeyName {
+				fiveOne, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "five_two" == vConfig.KeyName {
+				fiveTwo, _ = strconv.ParseUint(vConfig.Value, 10, 64)
+			}
+		}
+	}
+
 	res := &v1.AdminUserListReply{
 		Users: make([]*v1.AdminUserListReply_UserList, 0),
 	}
@@ -821,29 +840,34 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 				continue
 			}
 		} else {
-			if 1500000 <= vUsers.AmountUsdtOrigin {
-				currentLevel = 5
-			} else if 500000 <= vUsers.AmountUsdtOrigin {
-				currentLevel = 4
-			} else if 150000 <= vUsers.AmountUsdtOrigin {
-				currentLevel = 3
-			} else if 50000 <= vUsers.AmountUsdtOrigin {
-				currentLevel = 2
-			} else {
-				currentLevel = 1
+
+			if int(fiveTwo) <= len(myLowUser[vUsers.ID]) && fiveOne <= vUsers.AmountUsdtGet {
+				if 1500000 <= vUsers.AmountUsdtOrigin {
+					currentLevel = 5
+				} else if 500000 <= vUsers.AmountUsdtOrigin {
+					currentLevel = 4
+				} else if 150000 <= vUsers.AmountUsdtOrigin {
+					currentLevel = 3
+				} else if 50000 <= vUsers.AmountUsdtOrigin {
+					currentLevel = 2
+				} else {
+					currentLevel = 1
+				}
 			}
 
-			tmpLevel := int64(1)
-			if 2000 <= vUsers.Amount {
-				tmpLevel = 4
-			} else if 1000 <= vUsers.Amount {
-				tmpLevel = 3
-			} else if 500 <= vUsers.Amount {
-				tmpLevel = 2
-			}
+			if 0 < vUsers.Amount {
+				tmpLevel := int64(1)
+				if 2000 <= vUsers.Amount {
+					tmpLevel = 4
+				} else if 1000 <= vUsers.Amount {
+					tmpLevel = 3
+				} else if 500 <= vUsers.Amount {
+					tmpLevel = 2
+				}
 
-			if tmpLevel > currentLevel {
-				currentLevel = tmpLevel
+				if tmpLevel > currentLevel {
+					currentLevel = tmpLevel
+				}
 			}
 		}
 
@@ -3488,7 +3512,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 					}
 				}
 
-				if currentLevel > 0 {
+				if 0 < tmpRecommendUser.Amount {
 					tmpLevel := 1
 					tmpLevelNum := areaOne
 					if 2000 <= tmpRecommendUser.Amount {
@@ -3507,7 +3531,6 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 						tmpLastLevelNum = tmpLevelNum
 					}
 				}
-
 			}
 
 			var (
