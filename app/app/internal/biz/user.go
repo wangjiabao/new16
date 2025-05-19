@@ -421,6 +421,7 @@ type UserInfoRepo interface {
 	UpdateFour(ctx context.Context, userId int64, amount float64, num int64, address string) error
 	UpdateUserRewardNewFour(ctx context.Context, userId int64, amountUsdt float64) (int64, error)
 	UpdateFive(ctx context.Context, userId int64, amount float64, address string) error
+	UpdateSix(ctx context.Context, userId int64, amount float64) error
 	UpdateUserRewardRecommendNew(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, i int64, address string) (int64, error)
 	UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error)
@@ -799,30 +800,51 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			continue
 		}
 
-		tmpMyRecommendUserIdsLen := int64(0)
-		tmpMax := float64(0)
-		tmpAreaMin := float64(0)
-
-		if _, ok := myLowUser[vUsers.ID]; ok {
-			tmpMyRecommendUserIdsLen = int64(len(myLowUser[vUsers.ID]))
-
-			for _, vV := range myLowUser[vUsers.ID] {
-				if _, ok2 := usersMap[vV.UserId]; ok2 {
-					if tmpMax < usersMap[vV.UserId].MyTotalAmount+usersMap[vV.UserId].AmountUsdt {
-						tmpMax = usersMap[vV.UserId].MyTotalAmount + usersMap[vV.UserId].AmountUsdt
-					}
-				}
-			}
-
-			if 0 < tmpMax {
-				if vUsers.MyTotalAmount > tmpMax {
-					tmpAreaMin = vUsers.MyTotalAmount - tmpMax
-				}
-			}
-		}
 		currentLevel := vUsers.Vip
 		if 0 < vUsers.VipAdmin {
 			currentLevel = vUsers.VipAdmin
+		}
+
+		if 0 < vUsers.VipAdmin {
+			if 1 == vUsers.VipAdmin {
+				currentLevel = 1
+			} else if 2 == vUsers.VipAdmin {
+				currentLevel = 2
+			} else if 3 == vUsers.VipAdmin {
+				currentLevel = 3
+			} else if 4 == vUsers.VipAdmin {
+				currentLevel = 4
+			} else if 5 == vUsers.VipAdmin {
+				currentLevel = 5
+			} else {
+				// 跳过，没级别
+				continue
+			}
+		} else {
+			if 1500000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 5
+			} else if 500000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 4
+			} else if 150000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 3
+			} else if 50000 <= vUsers.AmountUsdtOrigin {
+				currentLevel = 2
+			} else {
+				currentLevel = 1
+			}
+
+			tmpLevel := int64(1)
+			if 2000 <= vUsers.Amount {
+				tmpLevel = 4
+			} else if 1000 <= vUsers.Amount {
+				tmpLevel = 3
+			} else if 500 <= vUsers.Amount {
+				tmpLevel = 2
+			}
+
+			if tmpLevel > currentLevel {
+				currentLevel = tmpLevel
+			}
 		}
 
 		// 推荐人
@@ -859,20 +881,11 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			BalanceUsdt:        fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceUsdtFloat),
 			BalanceDhb:         fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceRawFloat),
 			Vip:                currentLevel,
-			Out:                vUsers.OutRate,
-			HistoryRecommend:   tmpMyRecommendUserIdsLen,
-			AreaTotal:          vUsers.MyTotalAmount,
-			AreaMax:            tmpMax,
-			AreaMin:            tmpAreaMin,
-			AmountUsdtGet:      fmt.Sprintf("%.2f", vUsers.AmountUsdtGet),
-			AmountUsdtCurrent:  fmt.Sprintf("%.2f", vUsers.AmountUsdt),
-			BalanceKsdt:        fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceKsdtFloat),
-			RecommendLevel:     vUsers.RecommendLevel,
+			AreaTotal:          vUsers.AmountUsdtOrigin,
 			Lock:               vUsers.Lock,
 			LockReward:         vUsers.LockReward,
 			AmountFour:         fmt.Sprintf("%.2f", vUsers.AmountFour),
 			AmountFourGet:      fmt.Sprintf("%.2f", vUsers.AmountFourGet),
-			Password:           vUsers.Password,
 			Four:               int64(vUsers.Amount),
 			MyRecommendAddress: addressMyRecommend,
 		})
@@ -3017,6 +3030,103 @@ func (uuc *UserUseCase) UpdateUserRaw(ctx context.Context, userId int64, amount,
 	return err
 }
 
+func (uuc *UserUseCase) AdminDailyCReward(ctx context.Context, rewardAmount float64) error {
+	var (
+		users []*User
+		err   error
+	)
+
+	users, err = uuc.repo.GetAllUsers(ctx)
+	if nil == users {
+		fmt.Println("今日分红错误用户获取失败")
+		return err
+	}
+
+	one := make([]*User, 0)
+	two := make([]*User, 0)
+	three := make([]*User, 0)
+
+	for _, v := range users {
+		if 2000 <= v.Amount {
+			one = append(one, v)
+			two = append(two, v)
+			three = append(three, v)
+		} else if 1000 <= v.Amount {
+			one = append(one, v)
+			two = append(two, v)
+		} else if 500 <= v.Amount {
+			one = append(one, v)
+		}
+	}
+
+	total := len(one) + len(two) + len(three)
+	if 0 >= total {
+		fmt.Println("无人")
+		return nil
+	}
+
+	preReward := rewardAmount / float64(total)
+
+	for _, v := range one {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	for _, v := range two {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	for _, v := range three {
+		tmp := math.Round(preReward*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+			if err != nil {
+				fmt.Println("错误手续费分红：", err, v)
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily", err, v)
+			continue
+		}
+	}
+
+	return nil
+}
+
 func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) error {
 	var (
 		one       float64
@@ -3171,16 +3281,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price
+		tmp := num
 		tmp = math.Round(tmp*10000000) / 10000000
 
 		if 0 >= tmp {
@@ -3209,16 +3319,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price * twoOne
+		tmp := num * twoOne
 		tmp = math.Round(tmp*10000000) / 10000000
 
 		if 0 >= tmp {
@@ -3274,16 +3384,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price
+		tmp := num
 		tmp = math.Round(tmp*10000000) / 10000000
 		if 0 >= tmp {
 			continue
@@ -3312,6 +3422,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 		lastLevelNum := float64(0)
 		lastKey := len(tmpRecommendUserIds) - 1
 		tmpI := uint64(0)
+		tmpCurrentSameMax := float64(100)
 		for i := lastKey; i >= 0; i-- {
 			currentLevel := 0
 			tmpI++
@@ -3406,7 +3517,13 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 			if currentLevel < lastLevel {
 				continue
 			} else if currentLevel == lastLevel {
+				if tmpCurrentSameMax-areaZero <= -1 {
+					fmt.Println("平级奖励发光了", tmpCurrentSameMax, areaZero, tmpUserId)
+					continue
+				}
+
 				tmpAreaAmount = tmp * areaZero
+				tmpCurrentSameMax -= areaZero
 			} else {
 				// 级差
 				if tmpLastLevelNum < lastLevelNum {

@@ -2787,6 +2787,20 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewThreeT(ctx context.Context, userId in
 		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 	}
 
+	if amountB > 0 {
+		res = ui.data.DB(ctx).Table("user_recommend").Where("user_id=?", userId).
+			Updates(map[string]interface{}{"total": 1})
+		if res.Error != nil {
+			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+		}
+	} else {
+		res = ui.data.DB(ctx).Table("user_recommend").Where("user_id=?", userId).
+			Updates(map[string]interface{}{"total": 0})
+		if res.Error != nil {
+			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+		}
+	}
+
 	return nil
 }
 
@@ -2818,7 +2832,7 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewTwo(ctx context.Context, userId int64
 // ClearUserRaw .
 func (ui *UserInfoRepo) ClearUserRaw(ctx context.Context) error {
 	res := ui.data.DB(ctx).Table("user").Where("id>?", 0).
-		Updates(map[string]interface{}{"amount_usdt": 0, "amount_usdt_origin": 0, "my_total_amount": 0})
+		Updates(map[string]interface{}{"amount_usdt": 0, "amount_usdt_get": 0, "amount_usdt_origin": 0, "my_total_amount": 0})
 	if res.Error != nil {
 		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 	}
@@ -3429,6 +3443,34 @@ func (ui *UserInfoRepo) UpdateFive(ctx context.Context, userId int64, amount flo
 	reward.Address = address
 	reward.Type = "five"                 // 本次分红的行为类型
 	reward.Reason = "location_recommend" // 给我分红的理由
+	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ui *UserInfoRepo) UpdateSix(ctx context.Context, userId int64, amount float64) error {
+	var err error
+
+	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
+		Updates(map[string]interface{}{"amount_four_get": gorm.Expr("amount_four_get + ?", amount)})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
+	if err = ui.data.DB(ctx).Table("user_balance").
+		Where("user_id=?", userId).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float + ?", amount)}).Error; nil != err {
+		return errors.NotFound("user balance err", "user balance not found")
+	}
+
+	var reward Reward
+	reward.UserId = userId
+	reward.AmountNew = amount
+	reward.Type = "six"        // 本次分红的行为类型
+	reward.Reason = "location" // 给我分红的理由
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
 	if err != nil {
 		return err

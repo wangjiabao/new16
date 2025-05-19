@@ -564,6 +564,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/admin_dhb/daily_reward:
+        get:
+            tags:
+                - App
+            operationId: App_DailyReward
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DailyRewardReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/admin_dhb/deposit:
         get:
             tags:
@@ -2225,6 +2243,9 @@ components:
             type: object
             properties: {}
         CheckAndInsertRecommendAreaReply:
+            type: object
+            properties: {}
+        DailyRewardReply:
             type: object
             properties: {}
         DepositReply:
