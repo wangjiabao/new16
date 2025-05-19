@@ -2799,6 +2799,7 @@ func getTodayReward() (string, error) {
 		// 转换为 *big.Int
 		bigTimestamp := big.NewInt(startOfLastHour.Unix())
 
+		fmt.Println(bigTimestamp)
 		bal, err = instance.DailyFee(&bind.CallOpts{}, bigTimestamp)
 		if err != nil {
 			if 0 == j {
