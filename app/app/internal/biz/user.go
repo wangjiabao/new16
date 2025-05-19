@@ -3326,23 +3326,9 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 				continue
 			}
 
-			// 我的下级
-			if _, ok := myLowUser[tmpUserId]; !ok {
-				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, tmpUsers)
-				continue
-			}
-
-			if int(fiveTwo) > len(myLowUser[tmpUserId]) {
-				continue
-			}
-
 			tmpRecommendUser := usersMap[tmpUserId]
 			if nil == tmpRecommendUser {
 				fmt.Println("错误分红小区，信息缺失,user1：", err, tmpUsers)
-				continue
-			}
-
-			if fiveOne > tmpRecommendUser.AmountUsdtGet {
 				continue
 			}
 
@@ -3368,40 +3354,49 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 					continue
 				}
 			} else {
-				if 1500000 <= tmpRecommendUser.AmountUsdtOrigin {
-					currentLevel = 5
-					tmpLastLevelNum = areaFive
-				} else if 500000 <= tmpRecommendUser.AmountUsdtOrigin {
-					currentLevel = 4
-					tmpLastLevelNum = areaFour
-				} else if 150000 <= tmpRecommendUser.AmountUsdtOrigin {
-					currentLevel = 3
-					tmpLastLevelNum = areaThree
-				} else if 50000 <= tmpRecommendUser.AmountUsdtOrigin {
-					currentLevel = 2
-					tmpLastLevelNum = areaTwo
-				} else {
-					currentLevel = 1
-					tmpLastLevelNum = areaOne
+
+				// 我的下级
+				if _, ok := myLowUser[tmpUserId]; ok {
+					if int(fiveTwo) <= len(myLowUser[tmpUserId]) && fiveOne <= tmpRecommendUser.AmountUsdtGet {
+						if 1500000 <= tmpRecommendUser.AmountUsdtOrigin {
+							currentLevel = 5
+							tmpLastLevelNum = areaFive
+						} else if 500000 <= tmpRecommendUser.AmountUsdtOrigin {
+							currentLevel = 4
+							tmpLastLevelNum = areaFour
+						} else if 150000 <= tmpRecommendUser.AmountUsdtOrigin {
+							currentLevel = 3
+							tmpLastLevelNum = areaThree
+						} else if 50000 <= tmpRecommendUser.AmountUsdtOrigin {
+							currentLevel = 2
+							tmpLastLevelNum = areaTwo
+						} else {
+							currentLevel = 1
+							tmpLastLevelNum = areaOne
+						}
+					}
 				}
 
-				tmpLevel := 1
-				tmpLevelNum := areaOne
-				if 2000 <= tmpRecommendUser.Amount {
-					tmpLevel = 4
-					tmpLevelNum = areaFour
-				} else if 1000 <= tmpRecommendUser.Amount {
-					tmpLevel = 3
-					tmpLevelNum = areaThree
-				} else if 500 <= tmpRecommendUser.Amount {
-					tmpLevel = 2
-					tmpLevelNum = areaTwo
+				if currentLevel > 0 {
+					tmpLevel := 1
+					tmpLevelNum := areaOne
+					if 2000 <= tmpRecommendUser.Amount {
+						tmpLevel = 4
+						tmpLevelNum = areaFour
+					} else if 1000 <= tmpRecommendUser.Amount {
+						tmpLevel = 3
+						tmpLevelNum = areaThree
+					} else if 500 <= tmpRecommendUser.Amount {
+						tmpLevel = 2
+						tmpLevelNum = areaTwo
+					}
+
+					if tmpLevel > currentLevel {
+						currentLevel = tmpLevel
+						tmpLastLevelNum = tmpLevelNum
+					}
 				}
 
-				if tmpLevel > currentLevel {
-					currentLevel = tmpLevel
-					tmpLastLevelNum = tmpLevelNum
-				}
 			}
 
 			var (
