@@ -3281,16 +3281,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price
+		tmp := num
 		tmp = math.Round(tmp*10000000) / 10000000
 
 		if 0 >= tmp {
@@ -3319,16 +3319,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price * twoOne
+		tmp := num * twoOne
 		tmp = math.Round(tmp*10000000) / 10000000
 
 		if 0 >= tmp {
@@ -3384,16 +3384,16 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 		num := float64(0)
 		if five <= tmpUsers.AmountUsdtGet {
-			num = five * oneThree
+			num = tmpUsers.AmountUsdt * oneThree
 		} else if three <= tmpUsers.AmountUsdtGet {
-			num = three * oneTwo
+			num = tmpUsers.AmountUsdt * oneTwo
 		} else if one <= tmpUsers.AmountUsdtGet {
-			num = one * oneOne
+			num = tmpUsers.AmountUsdt * oneOne
 		} else {
 			continue
 		}
 
-		tmp := num / price
+		tmp := num
 		tmp = math.Round(tmp*10000000) / 10000000
 		if 0 >= tmp {
 			continue
