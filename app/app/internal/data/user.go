@@ -2787,6 +2787,12 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewThreeT(ctx context.Context, userId in
 		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 	}
 
+	res = ui.data.DB(ctx).Table("user_recommend").Where("user_id=?", userId).
+		Updates(map[string]interface{}{"total": 1})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
 	return nil
 }
 
