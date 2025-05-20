@@ -615,14 +615,14 @@ func (uuc *UserUseCase) AdminRewardList(ctx context.Context, req *v1.AdminReward
 			}
 		}
 
-		if 999999 == vUserReward.UserId {
-			tmpUser = "系统数据不需理会"
-		}
+		//if 999999 == vUserReward.UserId {
+		//	tmpUser = "系统数据不需理会"
+		//}
 
 		tmpReason := vUserReward.Reason
-		if "out" == tmpReason {
-			tmpUser = "系统数据不需理会"
-		}
+		//if "out" == tmpReason {
+		//	tmpUser = "系统数据不需理会"
+		//}
 
 		tmpLevel := int64(0)
 		tmpNum := int64(0)
@@ -634,9 +634,9 @@ func (uuc *UserUseCase) AdminRewardList(ctx context.Context, req *v1.AdminReward
 		amountNew := fmt.Sprintf("%.2f", vUserReward.AmountNew)
 
 		res.Rewards = append(res.Rewards, &v1.AdminRewardListReply_List{
-			CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-			Amount:     amountNew,
-			AmountNana: fmt.Sprintf("%.2f", vUserReward.AmountNewTwo),
+			CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+			Amount:    amountNew,
+			//AmountNana: fmt.Sprintf("%.2f", vUserReward.AmountNewTwo),
 			Address:    tmpUser,
 			Reason:     tmpReason,
 			Num:        tmpNum,   // 代数
