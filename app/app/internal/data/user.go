@@ -3362,7 +3362,7 @@ func (ui *UserInfoRepo) UpdateTwo(ctx context.Context, userId int64, amount floa
 	return nil
 }
 
-func (ui *UserInfoRepo) UpdateThree(ctx context.Context, userId int64, amount float64, num int64, address string) error {
+func (ui *UserInfoRepo) UpdateThree(ctx context.Context, userId int64, amount float64, num, level int64, address string) error {
 	var err error
 
 	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
@@ -3382,6 +3382,7 @@ func (ui *UserInfoRepo) UpdateThree(ctx context.Context, userId int64, amount fl
 	reward.AmountNew = amount
 	reward.Address = address
 	reward.TypeRecordId = num
+	reward.BalanceRecordId = level
 	reward.Type = "three"  // 本次分红的行为类型
 	reward.Reason = "team" // 给我分红的理由
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
@@ -3392,7 +3393,7 @@ func (ui *UserInfoRepo) UpdateThree(ctx context.Context, userId int64, amount fl
 	return nil
 }
 
-func (ui *UserInfoRepo) UpdateFour(ctx context.Context, userId int64, amount float64, num int64, address string) error {
+func (ui *UserInfoRepo) UpdateFour(ctx context.Context, userId int64, amount float64, num, level int64, address string) error {
 	var err error
 
 	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
@@ -3412,6 +3413,7 @@ func (ui *UserInfoRepo) UpdateFour(ctx context.Context, userId int64, amount flo
 	reward.AmountNew = amount
 	reward.Address = address
 	reward.TypeRecordId = num
+	reward.BalanceRecordId = level
 	reward.Type = "four"       // 本次分红的行为类型
 	reward.Reason = "team_two" // 给我分红的理由
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error

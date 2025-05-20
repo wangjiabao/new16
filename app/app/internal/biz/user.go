@@ -417,8 +417,8 @@ type UserInfoRepo interface {
 	UpdateUserRewardNew(ctx context.Context, id, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	UpdateOne(ctx context.Context, userId int64, amount float64) error
 	UpdateTwo(ctx context.Context, userId int64, amount float64, address string) error
-	UpdateThree(ctx context.Context, userId int64, amount float64, num int64, address string) error
-	UpdateFour(ctx context.Context, userId int64, amount float64, num int64, address string) error
+	UpdateThree(ctx context.Context, userId int64, amount float64, num, level int64, address string) error
+	UpdateFour(ctx context.Context, userId int64, amount float64, num, level int64, address string) error
 	UpdateUserRewardNewFour(ctx context.Context, userId int64, amountUsdt float64) (int64, error)
 	UpdateFive(ctx context.Context, userId int64, amount float64, address string) error
 	UpdateSix(ctx context.Context, userId int64, amount float64) error
@@ -3421,7 +3421,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 		lastLevel := 0
 		lastLevelNum := float64(0)
 		lastKey := len(tmpRecommendUserIds) - 1
-		tmpI := uint64(0)
+		tmpI := int64(0)
 		tmpCurrentSameMax := float64(100)
 		for i := lastKey; i >= 0; i-- {
 			currentLevel := 0
@@ -3548,7 +3548,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 			if currentLevel == lastLevel {
 				if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-					err = uuc.uiRepo.UpdateFour(ctx, tmpUserId, tmpAreaAmount, int64(i), tmpUsers.Address)
+					err = uuc.uiRepo.UpdateFour(ctx, tmpUserId, tmpAreaAmount, tmpI, int64(currentLevel), tmpUsers.Address)
 					if err != nil {
 						fmt.Println("错误分红平级：", err, tmpUsers)
 					}
@@ -3566,7 +3566,7 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 				}
 
 				if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-					err = uuc.uiRepo.UpdateThree(ctx, tmpUserId, tmpAreaAmount, int64(i), tmpUsers.Address)
+					err = uuc.uiRepo.UpdateThree(ctx, tmpUserId, tmpAreaAmount, tmpI, int64(currentLevel), tmpUsers.Address)
 					if err != nil {
 						fmt.Println("错误分红社区：", err, tmpUsers)
 					}
