@@ -615,21 +615,10 @@ func (uuc *UserUseCase) AdminRewardList(ctx context.Context, req *v1.AdminReward
 			}
 		}
 
-		//if 999999 == vUserReward.UserId {
-		//	tmpUser = "系统数据不需理会"
-		//}
-
 		tmpReason := vUserReward.Reason
-		//if "out" == tmpReason {
-		//	tmpUser = "系统数据不需理会"
-		//}
 
-		tmpLevel := int64(0)
-		tmpNum := int64(0)
-		if "area" == vUserReward.Reason {
-			tmpLevel = vUserReward.BalanceRecordId
-			tmpNum = vUserReward.ReasonLocationId
-		}
+		tmpLevel := vUserReward.BalanceRecordId
+		tmpNum := vUserReward.ReasonLocationId
 
 		amountNew := fmt.Sprintf("%.2f", vUserReward.AmountNew)
 
@@ -840,18 +829,19 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 				continue
 			}
 		} else {
-
-			if int(fiveTwo) <= len(myLowUser[vUsers.ID]) && fiveOne <= vUsers.AmountUsdtGet {
-				if 1500000 <= vUsers.AmountUsdtOrigin {
-					currentLevel = 5
-				} else if 500000 <= vUsers.AmountUsdtOrigin {
-					currentLevel = 4
-				} else if 150000 <= vUsers.AmountUsdtOrigin {
-					currentLevel = 3
-				} else if 50000 <= vUsers.AmountUsdtOrigin {
-					currentLevel = 2
-				} else {
-					currentLevel = 1
+			if _, ok := myLowUser[vUsers.ID]; ok {
+				if int(fiveTwo) <= len(myLowUser[vUsers.ID]) && fiveOne <= vUsers.AmountUsdtGet {
+					if 1500000 <= vUsers.AmountUsdtOrigin {
+						currentLevel = 5
+					} else if 500000 <= vUsers.AmountUsdtOrigin {
+						currentLevel = 4
+					} else if 150000 <= vUsers.AmountUsdtOrigin {
+						currentLevel = 3
+					} else if 50000 <= vUsers.AmountUsdtOrigin {
+						currentLevel = 2
+					} else {
+						currentLevel = 1
+					}
 				}
 			}
 
@@ -898,20 +888,25 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			}
 		}
 
+		tmpHistoryRecommend := int64(0)
+		if _, ok := myLowUser[vUsers.ID]; ok {
+			tmpHistoryRecommend = int64(len(myLowUser[vUsers.ID]))
+		}
+
 		res.Users = append(res.Users, &v1.AdminUserListReply_UserList{
 			UserId:             vUsers.ID,
 			CreatedAt:          vUsers.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 			Address:            vUsers.Address,
 			BalanceUsdt:        fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceUsdtFloat),
-			BalanceDhb:         fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceRawFloat),
-			Vip:                currentLevel,
+			MyRecommendAddress: addressMyRecommend,
+			AmountUsdtCurrent:  fmt.Sprintf("%.2f", vUsers.Amount),
+			BalanceRaw:         fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceRawFloat),
+			BalanceRawTwo:      fmt.Sprintf("%.2f", vUsers.AmountUsdt),
 			AreaTotal:          vUsers.AmountUsdtOrigin,
+			Vip:                currentLevel,
+			HistoryRecommend:   tmpHistoryRecommend,
 			Lock:               vUsers.Lock,
 			LockReward:         vUsers.LockReward,
-			AmountFour:         fmt.Sprintf("%.2f", vUsers.AmountFour),
-			AmountFourGet:      fmt.Sprintf("%.2f", vUsers.AmountFourGet),
-			Four:               int64(vUsers.Amount),
-			MyRecommendAddress: addressMyRecommend,
 		})
 	}
 
@@ -3336,6 +3331,10 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 	// 直推
 	for _, tmpUsers := range users {
+		if 1 == tmpUsers.LockReward {
+			fmt.Println("锁定上分红", tmpUsers)
+			continue
+		}
 		// 出局的
 		if 0 >= tmpUsers.AmountUsdtGet {
 			continue
@@ -3401,6 +3400,10 @@ func (uuc *UserUseCase) AdminDailyBReward(ctx context.Context, price float64) er
 
 	// 团队和平级
 	for _, tmpUsers := range users {
+		if 1 == tmpUsers.LockReward {
+			fmt.Println("锁定上分红", tmpUsers)
+			continue
+		}
 		// 出局的
 		if 0 >= tmpUsers.AmountUsdtGet {
 			continue
@@ -8462,6 +8465,16 @@ func (uuc *UserUseCase) AdminAddMoney(ctx context.Context, req *v1.AdminDailyAdd
 	)
 	user, err = uuc.repo.GetUserByAddressTwo(ctx, req.SendBody.Address)
 	if nil != err {
+		return nil, nil
+	}
+
+	if 500 == req.SendBody.Usdt {
+
+	} else if 1000 == req.SendBody.Usdt {
+
+	} else if 2000 == req.SendBody.Usdt {
+
+	} else {
 		return nil, nil
 	}
 

@@ -2085,27 +2085,17 @@ components:
                     type: string
                 address:
                     type: string
-                amountUsdtCurrent:
+                myRecommendAddress:
                     type: string
-                amountUsdtGet:
+                amountUsdtCurrent:
                     type: string
                 balanceUsdt:
                     type: string
-                balanceDhb:
+                balanceRaw:
                     type: string
-                balanceKsdt:
-                    type: string
-                recommendLevel:
-                    type: string
-                out:
+                balanceRawTwo:
                     type: string
                 areaTotal:
-                    type: number
-                    format: double
-                areaMin:
-                    type: number
-                    format: double
-                areaMax:
                     type: number
                     format: double
                 vip:
@@ -2115,16 +2105,6 @@ components:
                 lock:
                     type: string
                 lockReward:
-                    type: string
-                amountFour:
-                    type: string
-                amountFourGet:
-                    type: string
-                password:
-                    type: string
-                four:
-                    type: string
-                myRecommendAddress:
                     type: string
         AdminUserRecommendReply:
             type: object

@@ -285,11 +285,15 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, address 
 			return err
 		}
 
-		if 0 < myUserRecommendUserId && nil != userR && 0 < tmp {
-			err = ruc.userInfoRepo.UpdateFive(ctx, myUserRecommendUserId, tmp, address)
-			if nil != err {
-				return err
+		if 0 == userMy.LockReward {
+			if 0 < myUserRecommendUserId && nil != userR && 0 < tmp {
+				err = ruc.userInfoRepo.UpdateFive(ctx, myUserRecommendUserId, tmp, address)
+				if nil != err {
+					return err
+				}
 			}
+		} else {
+			fmt.Println("锁定用户", userMy)
 		}
 
 		//err = ruc.userInfoRepo.UpdateUserNewTwoNew(ctx, userId, amount, originTotal, strUpdate, int64(last), uudt, kkdt)

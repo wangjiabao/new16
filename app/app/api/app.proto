@@ -702,25 +702,16 @@ message AdminUserListReply { // 用户信息
 		int64 userId = 8;
 		string createdAt = 1; // 创建时间
 		string address = 2; // 地址
-		string amountUsdtCurrent = 15; // 当前认购金额
-		string amountUsdtGet = 14; // 已释放
-		string balanceUsdt = 3; // rsdt数量
-		string balanceDhb = 4; // rwb数量
-		string balanceKsdt = 151; // ksdt数量
-		int64 recommendLevel = 152; // 特殊奖励
-		int64 out = 7; // 出局次数
+		string myRecommendAddress = 25; // 上级邀请人
+		string amountUsdtCurrent = 15; // 认购金额
+		string balanceUsdt = 3; // 可提usdt余额
+		string balanceRaw = 4; // 可提现jwk余额
+		string balanceRawTwo = 151; // 钱包jwk余额
 		double areaTotal = 9; // 总业绩
-		double areaMin = 10; // 小区
-		double areaMax = 11; // 大区
-		int64 vip = 5; // 会员等级
-		int64 historyRecommend = 6; // 历史推荐人数
+		int64 vip = 5; // 级别
+		int64 historyRecommend = 6; // 推荐人数
 		int64 lock = 12; // 锁定状态
 		int64 lockReward = 13; // 开启禁止上级分红 1表示开启，0表示关闭
-		string amountFour = 21; //
-		string amountFourGet = 22; //
-		string password = 23;
-		int64 four = 24;
-		string myRecommendAddress = 25;
 	}
 
 	int64 count = 2;

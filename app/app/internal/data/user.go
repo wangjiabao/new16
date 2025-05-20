@@ -3871,16 +3871,16 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewThree(ctx context.Context, userId int
 		return errors.NotFound("user balance err", "user balance not found")
 	}
 
-	var reward Reward
-	reward.UserId = userId
-	reward.AmountNew = float64(amount)
-	reward.AmountNewTwo = float64(last)
-	reward.Type = "system_reward_area_two_daily" // 本次分红的行为类型
-	reward.Reason = "deposit_two"
-	err := ui.data.DB(ctx).Table("reward").Create(&reward).Error
-	if err != nil {
-		return err
-	}
+	//var reward Reward
+	//reward.UserId = userId
+	//reward.AmountNew = float64(amount)
+	//reward.AmountNewTwo = float64(last)
+	//reward.Type = "system_reward_area_two_daily" // 本次分红的行为类型
+	//reward.Reason = "deposit_two"
+	//err := ui.data.DB(ctx).Table("reward").Create(&reward).Error
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
@@ -6325,6 +6325,7 @@ func (ui *UserInfoRepo) GetUserById(ctx context.Context, Id int64) (*biz.User, e
 		RecommendLevel: user.RecommendLevel,
 		OutRate:        user.OutRate,
 		AmountFourGet:  user.AmountFourGet,
+		LockReward:     user.LockReward,
 		Amount:         user.Amount,
 	}, nil
 }
