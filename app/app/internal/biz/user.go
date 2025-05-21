@@ -49,6 +49,10 @@ type User struct {
 	RecommendUserReward    int64
 	RecommendUser          int64
 	RecommendUserH         int64
+	One                    float64
+	Two                    float64
+	Three                  float64
+	Four                   float64
 }
 
 type Stake struct {
@@ -2467,48 +2471,9 @@ func (uuc *UserUseCase) AdminFeeDaily(ctx context.Context, req *v1.AdminDailyFee
 
 func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (*v1.AdminAllReply, error) {
 	var (
-		rewards      []*Reward
-		err          error
-		total        *Total
-		fourTotal    float64
-		fourTotalGet float64
+		err error
 	)
-	rewards, err = uuc.ubRepo.GetRewardYes(ctx)
-	if nil != err {
-		return nil, err
-	}
 
-	total, err = uuc.ubRepo.GetTotal(ctx)
-	if nil != err {
-		return nil, err
-	}
-
-	totalRU := uint64(0)
-	todayRU := uint64(0)
-	TodayRewardRsdt := float64(0)
-	TodayRewardRsdtOther := float64(0)
-	TodayWithdraw := float64(0)
-	todayDeposit := float64(0)
-	for _, v := range rewards {
-		if "deposit" == v.Reason {
-			todayDeposit += v.AmountNew
-		}
-		if "location" == v.Reason {
-			TodayRewardRsdt += v.AmountNew
-		}
-		if "withdraw" == v.Reason {
-			TodayWithdraw += v.AmountNew
-		}
-		if "recommend_three" == v.Reason {
-			todayRU += uint64(v.AmountNew)
-		}
-		if "recommend" == v.Reason || "recommend_two" == v.Reason || "recommend_b" == v.Reason || "area" == v.Reason {
-			TodayRewardRsdtOther += v.AmountNew
-		}
-	}
-
-	totalDeposit := int64(0)
-	totalDeposit, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotalThree(ctx)
 	var (
 		users        []*User
 		userBalances []*UserBalance
@@ -2518,79 +2483,64 @@ func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (
 		return nil, err
 	}
 
-	now := time.Now().UTC()
-	var startDate time.Time
-	var endDate time.Time
-	if 16 <= now.Hour() {
-		startDate = now
-		endDate = now.AddDate(0, 0, -1)
-	} else {
-		startDate = now.AddDate(0, 0, -1)
-		endDate = now
-	}
-
-	todayStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 16, 0, 0, 0, time.UTC)
-	todayEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 16, 0, 0, 0, time.UTC)
-
 	totalUserR := int64(0)
 	totalUser := int64(0)
-	todayUserR := int64(0)
-	todayUser := int64(0)
-	totalHb := int64(0)
 	totalAmount := uint64(0)
+	totalAmountUsdt := float64(0)
+	d := int64(0)
+	f := uint64(0)
+	g := float64(0)
+	h := float64(0)
+
 	for _, v := range users {
 		totalAmount += v.Amount
-		fourTotal += v.AmountFour
-		fourTotalGet += v.AmountFourGet
-
-		totalHb += v.RecommendUserH
 		totalUserR++
-		if 0 < v.AmountUsdt || 1 <= v.OutRate {
+		if 0 < v.AmountUsdt {
+			totalAmountUsdt += v.AmountUsdt
 			totalUser++
 		}
-		totalRU += v.LastBiw
 
-		if v.CreatedAt.After(todayStart) && v.CreatedAt.Before(todayEnd) {
-			todayUserR++
-			if 0 < v.AmountUsdt || 1 <= v.OutRate {
-				todayUser++
-				todayRU += v.LastBiw
-			}
+		if 0 < v.Amount {
+			f += v.Amount
+			d++
 		}
+
+		h += v.Two + v.Three + v.Four
 	}
 
-	TotalReward := float64(0)
-	balanceUsdtTmp := float64(0)
+	i := float64(0)
+	j := float64(0)
 	userBalances, err = uuc.repo.GetAllUserBalance(ctx)
 	if nil != err {
 		return nil, err
 	}
 	for _, v := range userBalances {
-		balanceUsdtTmp += v.BalanceUsdtFloat
-		TotalReward += v.AreaTotalFloat + v.RecommendTotalFloat + v.RecommendTotalFloatTwo + v.LocationTotalFloat
+		i += v.BalanceUsdtFloat
+		j += v.BalanceRawFloat
+	}
+
+	var (
+		total *Total
+	)
+	total, err = uuc.ubRepo.GetTotal(ctx)
+	if nil != err {
+		return nil, err
 	}
 
 	return &v1.AdminAllReply{
-		TotalUserR:    totalUserR,
-		TotalUser:     totalUser,
-		TodayUserR:    todayUserR,
-		TodayUser:     todayUser,
-		TotalSendR:    fmt.Sprintf("%.2f", float64(totalRU)),
-		TodaySendR:    fmt.Sprintf("%.2f", float64(todayRU)),
-		TotalDeposit:  fmt.Sprintf("%.2f", float64(totalDeposit)),
-		TodayDeposit:  fmt.Sprintf("%.2f", todayDeposit),
-		BalanceUsdt:   fmt.Sprintf("%.2f", balanceUsdtTmp),
-		BuyTotal:      fmt.Sprintf("%.2f", total.Two),
-		TodayOne:      fmt.Sprintf("%.2f", TodayRewardRsdt),
-		TodayTwo:      fmt.Sprintf("%.2f", TodayRewardRsdtOther),
-		TodayThree:    fmt.Sprintf("%.2f", TodayRewardRsdtOther+TodayRewardRsdtOther),
-		TotalReward:   fmt.Sprintf("%.2f", TotalReward),
-		TodayWithdraw: fmt.Sprintf("%.2f", TodayWithdraw),
-		TotalWithdraw: fmt.Sprintf("%.2f", total.Three),
-		TotalHb:       fmt.Sprintf("%.2f", float64(totalHb)),
-		AmountFourGet: fmt.Sprintf("%.2f", fourTotalGet),
-		AmountFour:    fmt.Sprintf("%.2f", fourTotal),
-		AmountUsdt:    totalAmount,
+		A: totalUserR,
+		B: totalUser,
+		C: fmt.Sprintf("%.2f", totalAmount),
+		D: d,
+		E: fmt.Sprintf("%.2f", totalAmount),
+		F: fmt.Sprintf("%.2f", f),
+		G: fmt.Sprintf("%.2f", g),
+		H: fmt.Sprintf("%.2f", h),
+		I: fmt.Sprintf("%.2f", i),
+		J: fmt.Sprintf("%.2f", j),
+		K: fmt.Sprintf("%.2f", total.Three),
+		L: fmt.Sprintf("%.2f", total.Two),
+		M: "",
 	}, nil
 }
 
@@ -3078,68 +3028,80 @@ func (uuc *UserUseCase) AdminDailyCReward(ctx context.Context, rewardAmount floa
 		}
 	}
 
-	total := len(one) + len(two) + len(three)
-	if 0 >= total {
-		fmt.Println("无人")
-		return nil
-	}
+	//total := len(one) + len(two) + len(three)
+	//if 0 >= total {
+	//	fmt.Println("无人")
+	//	return nil
+	//}
 
-	preReward := rewardAmount / float64(total)
+	rewardAmount = rewardAmount / 3
 
-	for _, v := range one {
-		tmp := math.Round(preReward*10000000) / 10000000
-		if 0 >= tmp {
-			continue
-		}
+	if 0 < len(one) {
+		preReward := rewardAmount / float64(len(one))
 
-		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
-			if err != nil {
-				fmt.Println("错误手续费分红：", err, v)
+		for _, v := range one {
+			tmp := math.Round(preReward*10000000) / 10000000
+			if 0 >= tmp {
+				continue
 			}
 
-			return nil
-		}); nil != err {
-			fmt.Println("err reward daily", err, v)
-			continue
-		}
-	}
+			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+				err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+				if err != nil {
+					fmt.Println("错误手续费分红：", err, v)
+				}
 
-	for _, v := range two {
-		tmp := math.Round(preReward*10000000) / 10000000
-		if 0 >= tmp {
-			continue
-		}
-
-		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
-			if err != nil {
-				fmt.Println("错误手续费分红：", err, v)
+				return nil
+			}); nil != err {
+				fmt.Println("err reward daily", err, v)
+				continue
 			}
-
-			return nil
-		}); nil != err {
-			fmt.Println("err reward daily", err, v)
-			continue
 		}
 	}
 
-	for _, v := range three {
-		tmp := math.Round(preReward*10000000) / 10000000
-		if 0 >= tmp {
-			continue
-		}
+	if 0 < len(two) {
+		preReward := rewardAmount / float64(len(two))
 
-		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-			err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
-			if err != nil {
-				fmt.Println("错误手续费分红：", err, v)
+		for _, v := range two {
+			tmp := math.Round(preReward*10000000) / 10000000
+			if 0 >= tmp {
+				continue
 			}
 
-			return nil
-		}); nil != err {
-			fmt.Println("err reward daily", err, v)
-			continue
+			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+				err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+				if err != nil {
+					fmt.Println("错误手续费分红：", err, v)
+				}
+
+				return nil
+			}); nil != err {
+				fmt.Println("err reward daily", err, v)
+				continue
+			}
+		}
+	}
+
+	if 0 < len(three) {
+		preReward := rewardAmount / float64(len(three))
+
+		for _, v := range three {
+			tmp := math.Round(preReward*10000000) / 10000000
+			if 0 >= tmp {
+				continue
+			}
+
+			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+				err = uuc.uiRepo.UpdateSix(ctx, v.ID, tmp)
+				if err != nil {
+					fmt.Println("错误手续费分红：", err, v)
+				}
+
+				return nil
+			}); nil != err {
+				fmt.Println("err reward daily", err, v)
+				continue
+			}
 		}
 	}
 

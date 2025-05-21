@@ -1679,45 +1679,31 @@ components:
         AdminAllReply:
             type: object
             properties:
-                totalUserR:
+                a:
                     type: string
-                totalUser:
+                b:
                     type: string
-                todayUserR:
+                c:
                     type: string
-                todayUser:
+                d:
                     type: string
-                totalSendR:
+                e:
                     type: string
-                todaySendR:
+                f:
                     type: string
-                totalDeposit:
+                g:
                     type: string
-                todayDeposit:
+                h:
                     type: string
-                balanceUsdt:
+                i:
                     type: string
-                buyTotal:
+                j:
                     type: string
-                todayOne:
+                k:
                     type: string
-                todayTwo:
+                l:
                     type: string
-                todayThree:
-                    type: string
-                totalReward:
-                    type: string
-                todayWithdraw:
-                    type: string
-                totalWithdraw:
-                    type: string
-                totalHb:
-                    type: string
-                amountFour:
-                    type: string
-                amountFourGet:
-                    type: string
-                amountUsdt:
+                m:
                     type: string
         AdminAmountFourReply:
             type: object

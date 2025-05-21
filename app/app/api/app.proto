@@ -856,31 +856,19 @@ message AdminAllRequest {
 }
 
 message AdminAllReply {
-	int64 totalUserR = 1; // 注册人数
-	int64 totalUser = 2; // 激活总人数
-	int64 todayUserR = 3; // 今日注册人数
-	int64 todayUser = 4; // 今日激活人数
-
-	string totalSendR = 5; // 总注册赠送U
-	string todaySendR = 6; // 今日注册赠送U
-
-	string totalDeposit = 7; // 总充值U
-	string todayDeposit = 8; // 今日充值U
-	string balanceUsdt = 9; // 全网可提U
-	string buyTotal = 10; // 认购总数
-
-	string todayOne = 11; // 今日静态
-	string todayTwo = 12; // 今日动态
-	string todayThree = 13; // 今日动静态
-	string totalReward = 14; // 总动静态累计
-	string todayWithdraw = 15; // 今日提现
-	string totalWithdraw = 16; // 总提现
-	string totalHb = 17; // hb总数
-
-	string amountFour = 18; // hb总数
-	string amountFourGet = 19; // hb总数
-
-	uint64 amountUsdt = 20;
+	int64 a  = 1; // 注册人数
+	int64 b = 2; // 激活总人数
+	string c = 3; // 全网持币数量
+	int64 d = 4; // 节点人数
+	string e = 5; // 购买节点u
+	string f = 6; // 节点分红数量
+	string g = 7; // 持币分红数量
+	string h = 8; // 团队分红数量（分享团队平级）
+	string i = 9; // 全网可提u数量
+	string j= 10; // 全网可提币数量
+	string k = 11; // U提现总量
+	string l = 12; // 币提现总量
+	string m = 13; // 今日手续费奖励池
 }
 
 message AdminUserRecommendRequest {

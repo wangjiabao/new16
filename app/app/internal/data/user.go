@@ -42,6 +42,10 @@ type User struct {
 	RecommendUserH         int64     `gorm:"type:int;not null"`
 	AmountFour             float64   `gorm:"type:decimal(65,20);not null"`
 	AmountFourGet          float64   `gorm:"type:decimal(65,20);not null"`
+	One                    float64   `gorm:"type:decimal(65,20);not null"`
+	Two                    float64   `gorm:"type:decimal(65,20);not null"`
+	Three                  float64   `gorm:"type:decimal(65,20);not null"`
+	Four                   float64   `gorm:"type:decimal(65,20);not null"`
 }
 
 type Stake struct {
@@ -805,6 +809,10 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			RecommendUserH:         item.RecommendUserH,
 			AmountFourGet:          item.AmountFourGet,
 			AmountFour:             item.AmountFour,
+			One:                    item.One,
+			Two:                    item.Two,
+			Three:                  item.Three,
+			Four:                   item.Four,
 		})
 	}
 	return res, nil
