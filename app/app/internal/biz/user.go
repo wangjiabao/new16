@@ -2469,7 +2469,7 @@ func (uuc *UserUseCase) AdminFeeDaily(ctx context.Context, req *v1.AdminDailyFee
 	return &v1.AdminDailyFeeReply{}, nil
 }
 
-func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (*v1.AdminAllReply, error) {
+func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest, amountToday float64) (*v1.AdminAllReply, error) {
 	var (
 		err error
 	)
@@ -2485,15 +2485,14 @@ func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (
 
 	totalUserR := int64(0)
 	totalUser := int64(0)
-	totalAmount := uint64(0)
 	totalAmountUsdt := float64(0)
 	d := int64(0)
-	f := uint64(0)
+	e := uint64(0)
+	f := float64(0)
 	g := float64(0)
 	h := float64(0)
 
 	for _, v := range users {
-		totalAmount += v.Amount
 		totalUserR++
 		if 0 < v.AmountUsdt {
 			totalAmountUsdt += v.AmountUsdt
@@ -2501,11 +2500,12 @@ func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (
 		}
 
 		if 0 < v.Amount {
-			f += v.Amount
+			e += v.Amount
 			d++
 		}
 
 		h += v.Two + v.Three + v.Four
+		f += v.AmountFourGet
 	}
 
 	i := float64(0)
@@ -2530,9 +2530,9 @@ func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (
 	return &v1.AdminAllReply{
 		A: totalUserR,
 		B: totalUser,
-		C: fmt.Sprintf("%.2f", totalAmount),
+		C: fmt.Sprintf("%.2f", totalAmountUsdt),
 		D: d,
-		E: fmt.Sprintf("%.2f", totalAmount),
+		E: e,
 		F: fmt.Sprintf("%.2f", f),
 		G: fmt.Sprintf("%.2f", g),
 		H: fmt.Sprintf("%.2f", h),
@@ -2540,7 +2540,7 @@ func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (
 		J: fmt.Sprintf("%.2f", j),
 		K: fmt.Sprintf("%.2f", total.Three),
 		L: fmt.Sprintf("%.2f", total.Two),
-		M: "",
+		M: fmt.Sprintf("%.2f", amountToday),
 	}, nil
 }
 

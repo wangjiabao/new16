@@ -860,7 +860,7 @@ message AdminAllReply {
 	int64 b = 2; // 激活总人数
 	string c = 3; // 全网持币数量
 	int64 d = 4; // 节点人数
-	string e = 5; // 购买节点u
+	uint64 e = 5; // 购买节点u
 	string f = 6; // 节点分红数量
 	string g = 7; // 持币分红数量
 	string h = 8; // 团队分红数量（分享团队平级）

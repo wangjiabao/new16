@@ -1680,7 +1680,29 @@ func (a *AppService) AdminDailyFee(ctx context.Context, req *v1.AdminDailyFeeReq
 }
 
 func (a *AppService) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (*v1.AdminAllReply, error) {
-	return a.uuc.AdminAll(ctx, req)
+	var (
+		rewardAmountStr string
+		rewardAmount    float64
+		err             error
+	)
+	rewardAmountStr, err = getTodayReward()
+	if nil != err {
+		fmt.Println("获取昨日失败", err)
+		return nil, err
+	}
+
+	// 将字符串转换为 big.Float
+	raw := new(big.Float)
+	raw.SetPrec(236) // 精度设高一点以避免精度丢失
+	raw.SetString(rewardAmountStr)
+
+	// 除以 10^18 得到实际余额
+	divisor := new(big.Float).SetFloat64(1e18)
+	realBalance := new(big.Float).Quo(raw, divisor)
+	// 转为 float64
+	rewardAmount, _ = realBalance.Float64()
+
+	return a.uuc.AdminAll(ctx, req, rewardAmount)
 }
 
 func (a *AppService) AdminUserRecommend(ctx context.Context, req *v1.AdminUserRecommendRequest) (*v1.AdminUserRecommendReply, error) {
