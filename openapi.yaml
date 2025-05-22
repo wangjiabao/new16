@@ -564,7 +564,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/admin_dhb/daily_reward:
+    /api/admin_dhb/daily_reward_two:
         get:
             tags:
                 - App

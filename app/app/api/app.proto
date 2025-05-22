@@ -69,7 +69,7 @@ service App {
 
 	rpc DailyReward (DailyRewardRequest) returns (DailyRewardReply) {
 		option (google.api.http) = {
-			get: "/api/admin_dhb/daily_reward"
+			get: "/api/admin_dhb/daily_reward_two"
 		};
 	};
 

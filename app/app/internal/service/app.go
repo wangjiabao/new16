@@ -294,7 +294,7 @@ func (a *AppService) DepositBiw(ctx context.Context, req *v1.DepositRequest) (*v
 
 	// 发奖励
 	now := time.Now().UTC()
-	if 1 == req.Send || (16 == now.Hour() && 10 > now.Minute()) {
+	if 16 == now.Hour() && 10 > now.Minute() {
 		err = a.uuc.AdminDailyBReward(ctx, price)
 		if err != nil {
 			fmt.Println(err, "分红失败")

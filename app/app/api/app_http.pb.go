@@ -179,7 +179,7 @@ func RegisterAppHTTPServer(s *http.Server, srv AppHTTPServer) {
 	r.GET("/api/app_server/recommend_list", _App_RecommendList0_HTTP_Handler(srv))
 	r.POST("/api/app_server/withdraw", _App_Withdraw0_HTTP_Handler(srv))
 	r.GET("/api/admin_dhb/deposit", _App_Deposit0_HTTP_Handler(srv))
-	r.GET("/api/admin_dhb/daily_reward", _App_DailyReward0_HTTP_Handler(srv))
+	r.GET("/api/admin_dhb/daily_reward_two", _App_DailyReward0_HTTP_Handler(srv))
 	r.GET("/api/admin_dhb/deposit_withdraw", _App_DepositWithdraw0_HTTP_Handler(srv))
 	r.GET("/api/admin_dhb/deposit_biw", _App_DepositBiw0_HTTP_Handler(srv))
 	r.GET("/api/admin_dhb/deposit_withdraw_biw", _App_DepositWithdrawBiw0_HTTP_Handler(srv))
@@ -2432,7 +2432,7 @@ func (c *AppHTTPClientImpl) CheckAndInsertRecommendArea(ctx context.Context, in 
 
 func (c *AppHTTPClientImpl) DailyReward(ctx context.Context, in *DailyRewardRequest, opts ...http.CallOption) (*DailyRewardReply, error) {
 	var out DailyRewardReply
-	pattern := "/api/admin_dhb/daily_reward"
+	pattern := "/api/admin_dhb/daily_reward_two"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAppDailyReward))
 	opts = append(opts, http.PathTemplate(pattern))
