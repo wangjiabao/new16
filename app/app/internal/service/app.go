@@ -2816,10 +2816,9 @@ func getTodayReward() (string, error) {
 		}
 
 		now := time.Now().UTC()
-		lastHour := now.Add(-24 * time.Hour)
-		startOfLastHour := time.Date(lastHour.Year(), lastHour.Month(), lastHour.Day(), 0, 0, 0, 0, time.UTC)
+		startOfLastHour := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 		// 转换为 *big.Int
-		bigTimestamp := big.NewInt(startOfLastHour.Add(8 * time.Hour).Unix())
+		bigTimestamp := big.NewInt(startOfLastHour.Unix())
 
 		fmt.Println(bigTimestamp)
 		bal, err = instance.DailyFee(&bind.CallOpts{}, bigTimestamp)
