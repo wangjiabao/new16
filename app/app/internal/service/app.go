@@ -75,7 +75,7 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 
 		// 0x0299e92df88c034F6425e78b6f6A367e84160B45 test
 		// 0x5d4bAA2A7a73dEF7685d036AAE993662B0Ef2f8F rel
-		userLength, err = getUserLength("0xE059eb7464F8cFeA2C17964c095100E5CbD71835")
+		userLength, err = getUserLength("0xD2c89f6F81Cec55bab4de0C2cb4C2Cc7A77a9937")
 		if nil != err {
 			fmt.Println(err)
 		}
@@ -94,7 +94,7 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 
 		// 0x0299e92df88c034F6425e78b6f6A367e84160B454 test
 		// 0x5d4bAA2A7a73dEF7685d036AAE993662B0Ef2f8F rel
-		depositUsdtResult, err = getUserInfo(last, userLength-1, "0xE059eb7464F8cFeA2C17964c095100E5CbD71835")
+		depositUsdtResult, err = getUserInfo(last, userLength-1, "0xD2c89f6F81Cec55bab4de0C2cb4C2Cc7A77a9937")
 		if nil != err {
 			break
 		}
@@ -188,7 +188,7 @@ func (a *AppService) DepositBiw(ctx context.Context, req *v1.DepositRequest) (*v
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
+			tokenAddress := common.HexToAddress("0xD3210eD8e84c0Fb7844e04cFBeFD9D3Ebf858888")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2325,9 +2325,9 @@ func (a *AppService) AdminWithdrawEth(ctx context.Context, req *v1.AdminWithdraw
 		}
 
 		if "RAW" == withdraw.Type {
-			tokenAddress = "0x792784d2afe081F9eA1c459D19D7f14CE39D860C"
+			tokenAddress = "0xD3210eD8e84c0Fb7844e04cFBeFD9D3Ebf858888"
 		} else if "USDT" == withdraw.Type {
-			tokenAddress = "0x717441C98af570B4806Ee07e6B319395a4c6bFBA"
+			tokenAddress = "0x55d398326f99059fF775485246999027B3197955"
 		} else {
 			_, err = a.uuc.UpdateWithdrawSuccess(ctx, withdraw.ID)
 			continue
@@ -2561,7 +2561,7 @@ func (a *AppService) getUserBalanceB(ctx context.Context) (map[string]string, er
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
+			tokenAddress := common.HexToAddress("0xD3210eD8e84c0Fb7844e04cFBeFD9D3Ebf858888")
 			instance, err = NewDfil(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2644,7 +2644,7 @@ func (a *AppService) getUserBalanceBTwo(ctx context.Context) (map[string]string,
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
+			tokenAddress := common.HexToAddress("0xD3210eD8e84c0Fb7844e04cFBeFD9D3Ebf858888")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2809,7 +2809,7 @@ func getTodayReward() (string, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0x792784d2afe081F9eA1c459D19D7f14CE39D860C")
+		tokenAddress := common.HexToAddress("0xD3210eD8e84c0Fb7844e04cFBeFD9D3Ebf858888")
 		instance, err = NewEarth(tokenAddress, client)
 		if err != nil {
 			continue
@@ -2819,7 +2819,7 @@ func getTodayReward() (string, error) {
 		lastHour := now.Add(-24 * time.Hour)
 		startOfLastHour := time.Date(lastHour.Year(), lastHour.Month(), lastHour.Day(), 0, 0, 0, 0, time.UTC)
 		// 转换为 *big.Int
-		bigTimestamp := big.NewInt(startOfLastHour.Unix())
+		bigTimestamp := big.NewInt(startOfLastHour.Add(8 * time.Hour).Unix())
 
 		fmt.Println(bigTimestamp)
 		bal, err = instance.DailyFee(&bind.CallOpts{}, bigTimestamp)
@@ -2880,7 +2880,7 @@ func getPrice() (float64, error) {
 	}
 
 	var (
-		usdtAddress = common.HexToAddress("0x717441C98af570B4806Ee07e6B319395a4c6bFBA") // BSC上的USDT地址
+		usdtAddress = common.HexToAddress("0x55d398326f99059fF775485246999027B3197955") // BSC上的USDT地址
 	)
 
 	for _, urlTmp := range urls {
@@ -2890,7 +2890,7 @@ func getPrice() (float64, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0xCcE7B6aF9F0Db5d0CC799206f6a690f64aC0cB2C") // LP Pair 地址
+		tokenAddress := common.HexToAddress("0x00Ea7d0EA3eaf5EC31399840282C0257D617f55D") // LP Pair 地址
 		instance, err := NewPair(tokenAddress, client)
 		if err != nil {
 			fmt.Println("NewPair error:", err)
