@@ -188,7 +188,7 @@ func (a *AppService) DepositBiw(ctx context.Context, req *v1.DepositRequest) (*v
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xB497819e28A8C92aD5bf8e3ba5f63D2b84999999")
+			tokenAddress := common.HexToAddress("0xe0E3776004151678442baAb659a89aE9bfE40D92")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2325,7 +2325,7 @@ func (a *AppService) AdminWithdrawEth(ctx context.Context, req *v1.AdminWithdraw
 		}
 
 		if "RAW" == withdraw.Type {
-			tokenAddress = "0xB497819e28A8C92aD5bf8e3ba5f63D2b84999999"
+			tokenAddress = "0xe0E3776004151678442baAb659a89aE9bfE40D92"
 		} else if "USDT" == withdraw.Type {
 			tokenAddress = "0x55d398326f99059fF775485246999027B3197955"
 		} else {
@@ -2561,7 +2561,7 @@ func (a *AppService) getUserBalanceB(ctx context.Context) (map[string]string, er
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xB497819e28A8C92aD5bf8e3ba5f63D2b84999999")
+			tokenAddress := common.HexToAddress("0xe0E3776004151678442baAb659a89aE9bfE40D92")
 			instance, err = NewDfil(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2644,7 +2644,7 @@ func (a *AppService) getUserBalanceBTwo(ctx context.Context) (map[string]string,
 				continue
 			}
 
-			tokenAddress := common.HexToAddress("0xB497819e28A8C92aD5bf8e3ba5f63D2b84999999")
+			tokenAddress := common.HexToAddress("0xe0E3776004151678442baAb659a89aE9bfE40D92")
 			instance, err = NewEarth(tokenAddress, client)
 			if err != nil {
 				continue
@@ -2809,7 +2809,7 @@ func getTodayReward() (string, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0xB497819e28A8C92aD5bf8e3ba5f63D2b84999999")
+		tokenAddress := common.HexToAddress("0xe0E3776004151678442baAb659a89aE9bfE40D92")
 		instance, err = NewEarth(tokenAddress, client)
 		if err != nil {
 			continue
@@ -2889,7 +2889,7 @@ func getPrice() (float64, error) {
 			continue
 		}
 
-		tokenAddress := common.HexToAddress("0x509b7Ac6Bc2dB85444e3a400273e3245DA5DF5b3") // LP Pair 地址
+		tokenAddress := common.HexToAddress("0x1CF82D1aBA52251fC9ab10C9571AdB83C1F04B2a") // LP Pair 地址
 		instance, err := NewPair(tokenAddress, client)
 		if err != nil {
 			fmt.Println("NewPair error:", err)
