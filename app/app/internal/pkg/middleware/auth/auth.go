@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 type CustomClaims struct {
